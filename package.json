@@ -1,0 +1,40 @@
+{
+  "name": "eclectic-list",
+  "version": "1.0.0",
+  "description": "Eclectic-List",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "devstart": "nodemon index.js",
+    "start": "node index.js",
+    "build": "node build/build.js",
+    "heroku-postbuild": "npm install --only=dev --no-shrinkwrap && npm run build"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^3.0.4",
+    "body-parser": "^1.18.3",
+    "cloudinary": "^1.13.2",
+    "config": "^3.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "express-validator": "^5.3.1",
+    "joi": "^14.3.1",
+    "jsonwebtoken": "^8.4.0",
+    "moment": "^2.24.0",
+    "mongoose": "^5.4.1",
+    "morgan": "^1.9.1",
+    "multer": "^1.4.1",
+    "multer-storage-cloudinary": "^2.2.1",
+    "node-gyp": "^3.8.0",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.9",
+    "sriracha": "^1.0.0"
+  }
+}
