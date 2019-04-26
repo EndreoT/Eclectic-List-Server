@@ -28,9 +28,7 @@ mongoose.connect(mongoDB, { useNewUrlParser: true })
 // app.use("/admin", admin());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cors({
-    origin: 'http://eclectic-list.surge.sh/'
-  }));
+app.use(cors());
 app.use(morgan("tiny"));
 app.use(express.json());
 app.use("/api/categories", categoryRoutes);
