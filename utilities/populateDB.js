@@ -148,13 +148,13 @@ async function createPosts() {
     mongoose.connection.close();
 }
 
-async function assignDefaultAvatarToAllUsers() {
-    let update = {
-        $set: { avatar_image: '5c9454f285adca33447018c6'}
-    }
-    await User.updateMany(update=update)
-    mongoose.connection.close();
-}
+// async function assignDefaultAvatarToAllUsers() {
+//     let update = {
+//         $set: { avatar_image: '5c9454f285adca33447018c6'}
+//     }
+//     await User.updateMany(update=update)
+//     mongoose.connection.close();
+// }
 
 // createCategoryDocuments();
 // createUsers();
