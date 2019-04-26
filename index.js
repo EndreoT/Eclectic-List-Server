@@ -15,6 +15,7 @@ const imageRoutes = require("./routes/imageRoutes");
 const postRoutes = require("./routes/postRoutes");
 const userRoutes = require("./routes/userRoutes");
 
+// Express app
 const app = express();
 
 const mongoDB = process.env.MONGODB_URI || process.env.mLabDB;
