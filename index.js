@@ -18,7 +18,10 @@ const userRoutes = require("./routes/userRoutes");
 // Express app
 const app = express();
 
+// Path to DB
 const mongoDB = process.env.MONGODB_URI || process.env.mLabDB;
+
+// Local DB
 // const mongoDB = process.env.MONGODB_URI || process.env.localhostDB;
 
 // Connect to mongoose DB
