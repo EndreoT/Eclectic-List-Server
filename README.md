@@ -1,6 +1,12 @@
 # Eclectic-List Server
 
+## Deployed Links
+Client app: https://eclectic-list.herokuapp.com/
+
+Server API: https://eclectic-list-server.herokuapp.com/api/posts
+
 Client code: https://github.com/EndreoT/Eclectic-List-Client
+
 ### Description
 Node.js server for eclectic-list full stack application. Eclectic List is a concept full stack web application for creating posts for selling items that can include images, comment on user posts, and choose profile avatar images. This website draws inspiration from sites as Craigslist and Reddit. 
 
