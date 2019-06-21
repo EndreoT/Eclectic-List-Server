@@ -5,8 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "nodemon index.js",
-    "start": "node index.js"
+    "watch": "nodemon build/src/index.js",
+    "start": "node index.js",
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
   },
   "author": "",
   "license": "ISC",
@@ -33,7 +40,14 @@
     "tar": "^4.4.10"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.5",
+    "@types/express": "^4.17.0",
+    "@types/mongoose": "^5.5.6",
+    "@types/morgan": "^1.7.35",
+    "@types/node": "^12.0.8",
+    "gts": "^1.0.0",
     "nodemon": "^1.19.1",
-    "sriracha": "^1.0.0"
+    "sriracha": "^1.0.0",
+    "typescript": "~3.4.0"
   }
 }
