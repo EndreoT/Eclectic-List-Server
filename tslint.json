@@ -4,5 +4,6 @@
     "exclude": [
       "**/*.json"
     ]
-  }
+  },
+  "interface-name" : [true, "never-prefix"]
 }

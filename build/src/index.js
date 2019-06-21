@@ -27,12 +27,15 @@ class App {
         this.initRoutes();
         this.initExpressConnection();
     }
+    // Connect to mongoose DB
     initDB() {
+        // Local DB
+        // const mongoDB = process.env.MONGODB_URI || process.env.localhostDB;
         let mongoDBUrl;
-        if (process.env.MONGODB_URI) {
+        if (process.env.MONGODB_URI) { // Path to production mongoDB
             mongoDBUrl = process.env.MONGODB_URI;
         }
-        else if (process.env.mLabDB) {
+        else if (process.env.mLabDB) { // Path to remote mLab DB
             mongoDBUrl = process.env.mLabDB;
         }
         else {
@@ -63,36 +66,4 @@ class App {
     }
 }
 const app = new App();
-// Express app
-// const app: express.Application = express();
-// let mongoDBUrl: string;
-// if (process.env.MONGODB_URI) {
-//     mongoDBUrl = process.env.MONGODB_URI;
-// } else if (process.env.mLabDB) {
-//     mongoDBUrl = process.env.mLabDB;
-// } else {
-//     throw new Error('MongoDB URI is undefined');
-// }
-// Path to remot mLab DB
-// const mongoDB = process.env.MONGODB_URI || process.env.mLabDB;
-// Local DB
-// const mongoDB = process.env.MONGODB_URI || process.env.localhostDB;
-// Connect to mongoose DB
-// mongoose.connect(mongoDBUrl, { useNewUrlParser: true })
-//     .then(() => "You are now connected to Mongo!")
-//     .catch(err => console.error("Something went wrong!", err));
-// app.use("/admin", admin());
-// app.use(bodyParser.urlencoded({ extended: false }));
-// app.use(bodyParser.json());
-// app.use(cors());
-// app.use(morgan("tiny"));
-// app.use(express.json());
-// app.use("/api/categories", categoryRoutes);
-// app.use("/api/comments", commentRoutes);
-// app.use("/api/posts", postRoutes);
-// app.use("/api/auth", authRoutes);
-// app.use('/api/images', imageRoutes);
-// app.use('/users', userRoutes);
-// const port: string | number = process.env.PORT || 4000;
-// app.listen(port, () => console.log(`Listening on port ${port}...`));
 //# sourceMappingURL=index.js.map
