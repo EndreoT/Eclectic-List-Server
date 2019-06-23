@@ -5,7 +5,7 @@ import * as Joi from "joi";
 import {postModelConstants} from "../constants/postConstants";
 import {IPost} from '../models/post';
 import {IUser} from '../models/user';
-// import {IComment} from '../models/comment';
+import {IComment} from '../models/comment';
 
 
 // Validate post fields
@@ -40,11 +40,11 @@ export function validateAuthenticateUser(user: IUser): Joi.ValidationResult<IUse
 };
 
 // Validate comment fields
-// function validateComment(comment) {
-//     const schema = {
-//         comment: Joi.string().min(constants.subjectMin).max(constants.subjectMax).required(),
-//         postId: Joi.string().required(),
-//         userId: Joi.string().required(),
-//     }
-//     return Joi.validate(comment, schema);
-// };
+export function validateComment(comment: IComment): Joi.ValidationResult<IComment> {
+    const schema = {
+        comment: Joi.string().min(postModelConstants.subjectMin).max(postModelConstants.subjectMax).required(),
+        postId: Joi.string().required(),
+        userId: Joi.string().required(),
+    }
+    return Joi.validate(comment, schema);
+};

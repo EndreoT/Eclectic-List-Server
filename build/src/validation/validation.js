@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Joi = require("joi");
 const postConstants_1 = require("../constants/postConstants");
-// import {IComment} from '../models/comment';
 // Validate post fields
 function validatePost(post) {
     const schema = {
@@ -37,12 +36,14 @@ function validateAuthenticateUser(user) {
 exports.validateAuthenticateUser = validateAuthenticateUser;
 ;
 // Validate comment fields
-// function validateComment(comment) {
-//     const schema = {
-//         comment: Joi.string().min(constants.subjectMin).max(constants.subjectMax).required(),
-//         postId: Joi.string().required(),
-//         userId: Joi.string().required(),
-//     }
-//     return Joi.validate(comment, schema);
-// };
+function validateComment(comment) {
+    const schema = {
+        comment: Joi.string().min(postConstants_1.postModelConstants.subjectMin).max(postConstants_1.postModelConstants.subjectMax).required(),
+        postId: Joi.string().required(),
+        userId: Joi.string().required(),
+    };
+    return Joi.validate(comment, schema);
+}
+exports.validateComment = validateComment;
+;
 //# sourceMappingURL=validation.js.map
