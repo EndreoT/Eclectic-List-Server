@@ -1,21 +1,19 @@
-// const { sanitizeBody } = require("express-validator/filter");
-
-// const Category = require("../models/category");
-// const Image = require('../models/image');
-// const Post = require("../models/post");
-// const User = require("../models/user");
-// const validation = require("../validation/validation");
-
-// exports.getAllPosts = async function (req, res, next) {
-//     try {
-//         const posts = await Post.find().sort('-createdAt').populate("user", "username").populate("category");
-//         return res.json(posts);
-//     } catch (error) {
-//         return res.status(404).json({ message: `No posts exist.` });
-//         // return next(error);
-//     }
-// };
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+// import Image = require('../models/image');
+const post_1 = require("../models/post");
+async function getAllPosts(req, res, next) {
+    try {
+        const posts = await post_1.Post.find().sort('-createdAt').populate("user", "username").populate("category");
+        return res.json(posts);
+    }
+    catch (error) {
+        return res.status(404).json({ message: `No posts exist.` });
+        // return next(error);
+    }
+}
+exports.getAllPosts = getAllPosts;
+;
 // exports.getPost = async function (req, res, next) {
 //     try {
 //         const post = await Post.findById(req.params.post).populate("user", "username avatar_image").populate("category");
@@ -25,7 +23,6 @@
 //         // return next(error);
 //     }
 // };
-
 // exports.getPostsByUser = async function (req, res, next) {
 //     try {
 //         const user = await User.findOne({ username: req.params.user });
@@ -38,7 +35,6 @@
 //         return next(error);
 //     }
 // };
-
 // exports.getPostsByCategory = async function (req, res, next) {
 //     try {
 //         const category = await Category.findOne({ category: req.params.category });
@@ -51,12 +47,10 @@
 //         return next(error);
 //     }
 // };
-
 // exports.createPost = [ //NEED TO Handle HTML chars
 //     sanitizeBody("subject").trim().escape(),
 //     sanitizeBody("description").trim().escape(),
 //     sanitizeBody("price").toFloat().trim().escape(),
-
 //     async function (req, res, next) {
 //         const { error } = validation.validatePost(req.body);
 //         if (error) {
@@ -86,13 +80,11 @@
 //         }
 //     }
 // ];
-
 // exports.updatePost = [
 //     // TODO update category count
 //     sanitizeBody("subject").trim().escape(),
 //     sanitizeBody("description").trim().escape(),
 //     sanitizeBody("price").toFloat().trim().escape(),
-
 //     async function (req, res, next) {
 //         const { error } = validation.validatePost(req.body);
 //         if (error) {
@@ -117,7 +109,6 @@
 //                 },
 //                 { new: true }
 //             );
-
 //             if (!post) {
 //                 return res.status(404).json({ message: "That post ID was not found." });
 //             }
@@ -126,7 +117,6 @@
 //             return next(error);
 //         }
 //     }];
-
 // exports.deletePost = async function (req, res, next) {
 //     try {
 //         const post = await Post.findById(req.params.id);
@@ -147,3 +137,4 @@
 //         return res.status(404).json({ message: `Post id '${req.params.id} does not exist.'` });
 //     }
 // };
+//# sourceMappingURL=postController.js.map

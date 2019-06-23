@@ -13,8 +13,8 @@ import * as mongoose from "mongoose";
 import { categoryRouter } from './routes/categoryRoutes';
 // import commentRoutes = require("./routes/commentRoutes");
 // import imageRoutes = require("./routes/imageRoutes");
-// import postRoutes = require("./routes/postRoutes");
-// import userRoutes = require("./routes/userRoutes");
+import {postRouter} from "./routes/postRoutes";
+import {userRouter} from "./routes/userRoutes";
 
 
 class App {
@@ -63,10 +63,10 @@ class App {
     private initRoutes(): void {
         this.app.use("/api/categories", categoryRouter);
         // app.use("/api/comments", commentRoutes);
-        // app.use("/api/posts", postRoutes);
+        this.app.use("/api/posts", postRouter);
         // app.use("/api/auth", authRoutes);
         // app.use('/api/images', imageRoutes);
-        // app.use('/users', userRoutes);
+        this.app.use('/users', userRouter);
     }
 
     private initExpressConnection(): void {

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
+const mongoose_1 = require("mongoose");
 const categoriesConstants_1 = require("../constants/categoriesConstants");
-const categorySchema = new mongoose.Schema({
+const categorySchema = new mongoose_1.Schema({
     category: {
         type: String,
         required: true,
@@ -17,5 +17,5 @@ const categorySchema = new mongoose.Schema({
         default: 0,
     },
 }, { timestamps: true });
-exports.Category = mongoose.model("Category", categorySchema);
+exports.Category = mongoose_1.model("Category", categorySchema);
 //# sourceMappingURL=category.js.map

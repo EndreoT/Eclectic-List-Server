@@ -14,8 +14,8 @@ const mongoose = require("mongoose");
 const categoryRoutes_1 = require("./routes/categoryRoutes");
 // import commentRoutes = require("./routes/commentRoutes");
 // import imageRoutes = require("./routes/imageRoutes");
-// import postRoutes = require("./routes/postRoutes");
-// import userRoutes = require("./routes/userRoutes");
+const postRoutes_1 = require("./routes/postRoutes");
+const userRoutes_1 = require("./routes/userRoutes");
 class App {
     constructor() {
         this.app = express();
@@ -55,10 +55,10 @@ class App {
     initRoutes() {
         this.app.use("/api/categories", categoryRoutes_1.categoryRouter);
         // app.use("/api/comments", commentRoutes);
-        // app.use("/api/posts", postRoutes);
+        this.app.use("/api/posts", postRoutes_1.postRouter);
         // app.use("/api/auth", authRoutes);
         // app.use('/api/images', imageRoutes);
-        // app.use('/users', userRoutes);
+        this.app.use('/users', userRoutes_1.userRouter);
     }
     initExpressConnection() {
         const port = process.env.PORT || 4000;

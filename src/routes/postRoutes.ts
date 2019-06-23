@@ -1,12 +1,12 @@
-// const express = require("express");
+import * as express from "express";
 
-// const authController = require("../controllers/authController");
-// const postController = require("../controllers/postController");
+// import authController = require("../controllers/authController");
+import * as postController from "../controllers/postController";
 
-// const router = express.Router();
+const router: express.Router = express.Router();
 
 
-// router.get("/", postController.getAllPosts);
+router.get("/", postController.getAllPosts);
 
 // router.get("/:post", postController.getPost);
 
@@ -20,4 +20,4 @@
 
 // router.delete("/delete/:id", authController.authenticateJWT, postController.deletePost);
 
-// module.exports = router;
+export const postRouter = router;

@@ -1,13 +1,14 @@
-import * as mongoose from "mongoose";
+import {Schema, Document, Model, model} from 'mongoose';
 
 import {allowedCategories} from "../constants/categoriesConstants";
 
-export interface ICategory extends mongoose.Document {
+
+export interface ICategory extends Document {
     category: string;
     number_of_posts: number;
 }
 
-const categorySchema: mongoose.Schema = new mongoose.Schema(
+const categorySchema: Schema = new Schema(
     {
         category: {
             type: String,
@@ -27,4 +28,4 @@ const categorySchema: mongoose.Schema = new mongoose.Schema(
     { timestamps: true },
 );
 
-export const Category: mongoose.Model<ICategory> = mongoose.model<ICategory>("Category", categorySchema);
+export const Category: Model<ICategory> = model<ICategory>("Category", categorySchema);
