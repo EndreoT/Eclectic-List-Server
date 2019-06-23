@@ -14,6 +14,7 @@ interface IPostBody {
   description: string;
   price: number;
   category: string;
+  userId?: string;
   user?: string;
 }
 
@@ -64,90 +65,79 @@ export async function getPostsByCategory(req: Request, res: Response, next: Next
   }
 }
 
-exports.createPost = [ //NEED TO Handle HTML chars
-  sanitizeBody("subject").trim().escape(),
-  sanitizeBody("description").trim().escape(),
-  sanitizeBody("price").toFloat().trim().escape(),
-
-  async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
-    const { error }: { error: ValidationError } = validation.validatePost(req.body);
-    if (error) {
-      return res.status(400).json(error.details[0]);
-    }
-    try {
-      const [user, category] = await Promise.all(
-        [User.findById(req.body.userId), Category.findOne({ category: req.body.category })]
-      );
-      if (!user || !category) {
-        return res.json({ message: `User with id ${req.body.userId} does not exist.` });
-      }
-      const postCreateBody: IPostBody = {
-        subject: req.body.subject,
-        description: req.body.description,
-        price: req.body.price,
-        category: category._id,
-        user: user._id,
-      };
-      const post: IPost = new Post(postCreateBody);
-      const savedPost: IPost = await post.save();
-      await Promise.all(
-        [
-          User.findByIdAndUpdate(user._id, { $inc: { number_of_posts: 1 } }),
-          Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } })
-        ]
-      );
-      return res.json(savedPost);
-    } catch (error) {
-      return next(error);
-    }
+//NEED TO Handle HTML chars
+export async function createPost(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+  const { error }: { error: ValidationError } = validation.validatePost(req.body);
+  if (error) {
+    return res.status(400).json(error.details[0]);
   }
-];
-
-exports.updatePost = [
-  // TODO update category count
-  sanitizeBody("subject").trim().escape(),
-  sanitizeBody("description").trim().escape(),
-  sanitizeBody("price").toFloat().trim().escape(),
-
-  async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
-    const { error } = validation.validatePost(req.body);
-    if (error) {
-      return res.status(400).json(error.details[0]);
+  try {
+    const [user, category] = await Promise.all(
+      [User.findById(req.body.userId), Category.findOne({ category: req.body.category })]
+    );
+    if (!user || !category) {
+      return res.json({ message: `User with id ${req.body.userId} does not exist.` });
     }
-    try {
-      const [category, originalPost] = await Promise.all(
-        [Category.findOne({ category: req.body.category }), Post.findById(req.params.id)]
-      );
-      if (!originalPost || !category) {
-        return res.json({ message: `Post with id ${req.params.id} does not exist.` });
-      }
-      if (category._id !== originalPost.category) { //Updates number of posts for category
-        await Promise.all([
-          Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } }),
-          Category.findByIdAndUpdate(originalPost.category, { $inc: { number_of_posts: -1 } }),
-        ]);
-      }
-      const postUpdateBody: IPostBody = {
-        subject: req.body.subject,
-        description: req.body.description,
-        price: req.body.price,
-        category: category._id,
-      }
-      const post = await Post.findByIdAndUpdate(req.params.id,
-        {
-          $set: postUpdateBody,
-        },
-        { new: true }
-      );
+    const postCreateBody: IPostBody = {
+      subject: req.body.subject,
+      description: req.body.description,
+      price: req.body.price,
+      category: category._id,
+      user: user._id,
+    };
+    const post: IPost = new Post(postCreateBody);
+    const savedPost: IPost = await post.save();
+    await Promise.all(
+      [
+        User.findByIdAndUpdate(user._id, { $inc: { number_of_posts: 1 } }),
+        Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } })
+      ]
+    );
+    return res.json(savedPost);
+  } catch (error) {
+    return next(error);
+  }
+}
 
-      if (!post) {
-        return res.status(404).json({ message: "That post ID was not found." });
-      }
-      return res.send(post);
-    } catch (error) {
-      return next(error);
+export async function updatePost(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+  const { error } = validation.validatePost(req.body);
+  if (error) {
+    return res.status(400).json(error.details[0]);
+  }
+  try {
+    const [category, originalPost] = await Promise.all(
+      [Category.findOne({ category: req.body.category }), Post.findById(req.params.id)]
+    );
+    if (!originalPost || !category) {
+      return res.json({ message: `Post with id ${req.params.id} does not exist.` });
     }
-  }];
+    if (category._id !== originalPost.category) { //Updates number of posts for category
+      await Promise.all([
+        Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } }),
+        Category.findByIdAndUpdate(originalPost.category, { $inc: { number_of_posts: -1 } }),
+      ]);
+    }
+    const postUpdateBody: IPostBody = {
+      subject: req.body.subject,
+      description: req.body.description,
+      price: req.body.price,
+      category: category._id,
+    }
+    const post = await Post.findByIdAndUpdate(req.params.id,
+      {
+        $set: postUpdateBody,
+      },
+      { new: true }
+    );
+
+    if (!post) {
+      return res.status(404).json({ message: "That post ID was not found." });
+    }
+    return res.send(post);
+  } catch (error) {
+    return next(error);
+  }
+}
 
 export async function deletePost(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {

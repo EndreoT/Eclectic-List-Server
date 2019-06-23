@@ -1,4 +1,4 @@
-// const { sanitizeBody } = require("express-validator/filter");
+// import { sanitizeBody } from "express-validator/filter";
 // const passport = require("passport");
 // const ExtractJWT = require('passport-jwt').ExtractJwt;
 // const JwtStrategy = require('passport-jwt').Strategy;

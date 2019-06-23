@@ -1,5 +1,5 @@
 "use strict";
-// const { sanitizeBody } = require("express-validator/filter");
+// import { sanitizeBody } from "express-validator/filter";
 // const Comment = require("../models/comment");
 // const Post = require("../models/post");
 // const User = require("../models/user");

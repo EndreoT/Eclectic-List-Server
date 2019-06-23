@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const filter_1 = require("express-validator/filter");
 const category_1 = require("../models/category");
 const image_1 = require("../models/image");
 const post_1 = require("../models/post");
@@ -59,80 +58,72 @@ async function getPostsByCategory(req, res, next) {
     }
 }
 exports.getPostsByCategory = getPostsByCategory;
-exports.createPost = [
-    filter_1.sanitizeBody("subject").trim().escape(),
-    filter_1.sanitizeBody("description").trim().escape(),
-    filter_1.sanitizeBody("price").toFloat().trim().escape(),
-    async (req, res, next) => {
-        const { error } = validation.validatePost(req.body);
-        if (error) {
-            return res.status(400).json(error.details[0]);
+//NEED TO Handle HTML chars
+async function createPost(req, res, next) {
+    const { error } = validation.validatePost(req.body);
+    if (error) {
+        return res.status(400).json(error.details[0]);
+    }
+    try {
+        const [user, category] = await Promise.all([user_1.User.findById(req.body.userId), category_1.Category.findOne({ category: req.body.category })]);
+        if (!user || !category) {
+            return res.json({ message: `User with id ${req.body.userId} does not exist.` });
         }
-        try {
-            const [user, category] = await Promise.all([user_1.User.findById(req.body.userId), category_1.Category.findOne({ category: req.body.category })]);
-            if (!user || !category) {
-                return res.json({ message: `User with id ${req.body.userId} does not exist.` });
-            }
-            const postCreateBody = {
-                subject: req.body.subject,
-                description: req.body.description,
-                price: req.body.price,
-                category: category._id,
-                user: user._id,
-            };
-            const post = new post_1.Post(postCreateBody);
-            const savedPost = await post.save();
+        const postCreateBody = {
+            subject: req.body.subject,
+            description: req.body.description,
+            price: req.body.price,
+            category: category._id,
+            user: user._id,
+        };
+        const post = new post_1.Post(postCreateBody);
+        const savedPost = await post.save();
+        await Promise.all([
+            user_1.User.findByIdAndUpdate(user._id, { $inc: { number_of_posts: 1 } }),
+            category_1.Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } })
+        ]);
+        return res.json(savedPost);
+    }
+    catch (error) {
+        return next(error);
+    }
+}
+exports.createPost = createPost;
+async function updatePost(req, res, next) {
+    const { error } = validation.validatePost(req.body);
+    if (error) {
+        return res.status(400).json(error.details[0]);
+    }
+    try {
+        const [category, originalPost] = await Promise.all([category_1.Category.findOne({ category: req.body.category }), post_1.Post.findById(req.params.id)]);
+        if (!originalPost || !category) {
+            return res.json({ message: `Post with id ${req.params.id} does not exist.` });
+        }
+        if (category._id !== originalPost.category) { //Updates number of posts for category
             await Promise.all([
-                user_1.User.findByIdAndUpdate(user._id, { $inc: { number_of_posts: 1 } }),
-                category_1.Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } })
+                category_1.Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } }),
+                category_1.Category.findByIdAndUpdate(originalPost.category, { $inc: { number_of_posts: -1 } }),
             ]);
-            return res.json(savedPost);
         }
-        catch (error) {
-            return next(error);
+        const postUpdateBody = {
+            subject: req.body.subject,
+            description: req.body.description,
+            price: req.body.price,
+            category: category._id,
+        };
+        const post = await post_1.Post.findByIdAndUpdate(req.params.id, {
+            $set: postUpdateBody,
+        }, { new: true });
+        if (!post) {
+            return res.status(404).json({ message: "That post ID was not found." });
         }
+        return res.send(post);
     }
-];
-exports.updatePost = [
-    // TODO update category count
-    filter_1.sanitizeBody("subject").trim().escape(),
-    filter_1.sanitizeBody("description").trim().escape(),
-    filter_1.sanitizeBody("price").toFloat().trim().escape(),
-    async (req, res, next) => {
-        const { error } = validation.validatePost(req.body);
-        if (error) {
-            return res.status(400).json(error.details[0]);
-        }
-        try {
-            const [category, originalPost] = await Promise.all([category_1.Category.findOne({ category: req.body.category }), post_1.Post.findById(req.params.id)]);
-            if (!originalPost || !category) {
-                return res.json({ message: `Post with id ${req.params.id} does not exist.` });
-            }
-            if (category._id !== originalPost.category) { //Updates number of posts for category
-                await Promise.all([
-                    category_1.Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } }),
-                    category_1.Category.findByIdAndUpdate(originalPost.category, { $inc: { number_of_posts: -1 } }),
-                ]);
-            }
-            const postUpdateBody = {
-                subject: req.body.subject,
-                description: req.body.description,
-                price: req.body.price,
-                category: category._id,
-            };
-            const post = await post_1.Post.findByIdAndUpdate(req.params.id, {
-                $set: postUpdateBody,
-            }, { new: true });
-            if (!post) {
-                return res.status(404).json({ message: "That post ID was not found." });
-            }
-            return res.send(post);
-        }
-        catch (error) {
-            return next(error);
-        }
+    catch (error) {
+        return next(error);
     }
-];
+}
+exports.updatePost = updatePost;
 async function deletePost(req, res, next) {
     try {
         const post = await post_1.Post.findById(req.params.id);
