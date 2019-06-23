@@ -4,7 +4,6 @@ const user_1 = require("../models/user");
 async function getAllUsers(req, res, next) {
     try {
         const users = await user_1.User.find({}, "username number_of_posts avatar_image").populate("avatar_image");
-        // const users: IUser[] = await User.find({}, "username number_of_posts avatar_image").populate('number_of_posts')
         return res.json(users);
     }
     catch (error) {
