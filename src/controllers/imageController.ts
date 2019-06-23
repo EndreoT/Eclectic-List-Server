@@ -1,11 +1,12 @@
 // // Images stored on Cloudinary 
 
-// const multer = require("multer");
-// const cloudinary = require("cloudinary");
-// const cloudinaryStorage = require("multer-storage-cloudinary");
+import {Request, Response, NextFunction} from 'express';
+// import * as multer from "multer";
+// import * as cloudinary from "cloudinary";
+// import * as cloudinaryStorage from "multer-storage-cloudinary";
 
-// const Image = require('../models/image');
-// const User = require('../models/user');
+import {IImage, Image} from '../models/image';
+import {User} from '../models/user';
 
 // async function asyncForEach(array, callback) {
 //     for (let index = 0; index < array.length; index++) {
@@ -130,14 +131,14 @@
 //     }
 // }
 
-// exports.getAllImages = async (req, res, next) => {
-//     try {
-//         const images = await Image.find();
-//         res.json(images);
-//     } catch (error) {
-//         return res.status(404).json({ message: `No images exist.` });
-//     }
-// }
+export async function getAllImages (req: Request, res: Response, next: NextFunction) {
+    try {
+        const images = await Image.find();
+        return res.json(images);
+    } catch (error) {
+        return res.status(404).json({ message: `No images exist.` });
+    }
+}
 
 // exports.getAllAvatarImages = async (req, res, next) => {
 //     try {

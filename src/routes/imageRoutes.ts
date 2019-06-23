@@ -1,13 +1,13 @@
-// const express = require("express");
+import * as express from "express";
 
-// const imageController = require('../controllers/imageController')
+import * as imageController from '../controllers/imageController';
 
-// const router = express.Router();
+const router: express.Router = express.Router();
 
 
 // // get requests with image url are made directly to Cloudinary API
 
-// router.get('/', imageController.getAllImages);
+router.get('/', imageController.getAllImages);
 
 // router.get('/avatar', imageController.getAllAvatarImages);
 
@@ -23,4 +23,4 @@
 
 // router.put('/setAvatarImage', imageController.setUserAvatarImage);
 
-// module.exports = router;
+export const imageRouter = router;

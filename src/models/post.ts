@@ -51,11 +51,6 @@ const postSchema: Schema = new Schema(
       type: Number,
       default: 0,
     },
-    // images: [{ // <- Image model stores ref to post instead
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Image',
-    //     required: false,
-    // }],
   },
   { timestamps: true }
 );

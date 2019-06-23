@@ -2,7 +2,7 @@ import { sanitizeBody } from "express-validator/filter";
 import { Request, Response, NextFunction } from 'express';
 
 import { ICategory, Category } from "../models/category";
-// import Image = require('../models/image');
+import {IImage, Image} from '../models/image';
 import { IPost, Post } from "../models/post";
 import { IUser, User } from "../models/user";
 import * as validation from "../validation/validation";
@@ -17,15 +17,15 @@ export async function getAllPosts(req: Request, res: Response, next: NextFunctio
   }
 };
 
-// exports.getPost = async function (req, res, next) {
-//     try {
-//         const post = await Post.findById(req.params.post).populate("user", "username avatar_image").populate("category");
-//         return res.status(200).json(post);
-//     } catch (error) {
-//         return res.status(404).json({ message: `Post id '${req.params.post} does not exist.'` });
-//         // return next(error);
-//     }
-// };
+export async function getPost(req: Request, res: Response, next: NextFunction): Promise<Response> {
+    try {
+        const post: IPost | null = await Post.findById(req.params.post).populate("user", "username avatar_image").populate("category");
+        return res.status(200).json(post);
+    } catch (error) {
+        return res.status(404).json({ message: `Post id '${req.params.post} does not exist.'` });
+        // return next(error);
+    }
+};
 
 // exports.getPostsByUser = async function (req, res, next) {
 //     try {

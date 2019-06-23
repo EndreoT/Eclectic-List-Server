@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// import Image = require('../models/image');
 const post_1 = require("../models/post");
 async function getAllPosts(req, res, next) {
     try {
@@ -14,15 +13,18 @@ async function getAllPosts(req, res, next) {
 }
 exports.getAllPosts = getAllPosts;
 ;
-// exports.getPost = async function (req, res, next) {
-//     try {
-//         const post = await Post.findById(req.params.post).populate("user", "username avatar_image").populate("category");
-//         return res.status(200).json(post);
-//     } catch (error) {
-//         return res.status(404).json({ message: `Post id '${req.params.post} does not exist.'` });
-//         // return next(error);
-//     }
-// };
+async function getPost(req, res, next) {
+    try {
+        const post = await post_1.Post.findById(req.params.post).populate("user", "username avatar_image").populate("category");
+        return res.status(200).json(post);
+    }
+    catch (error) {
+        return res.status(404).json({ message: `Post id '${req.params.post} does not exist.'` });
+        // return next(error);
+    }
+}
+exports.getPost = getPost;
+;
 // exports.getPostsByUser = async function (req, res, next) {
 //     try {
 //         const user = await User.findOne({ username: req.params.user });

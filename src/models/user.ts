@@ -1,6 +1,6 @@
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
-import {Schema, Document, Model, model, HookNextFunction} from 'mongoose';
+import {Schema, Document, Types, Model, model, HookNextFunction} from 'mongoose';
 
 
 const secret: any = process.env.secret;
@@ -13,7 +13,7 @@ export interface IUser extends Document {
     email: string;
     password: string;
     number_of_posts: number;
-    // avatar_image: string;
+    avatar_image: Types.ObjectId;
     isValidPassword: Function;
 }
 
@@ -44,16 +44,16 @@ const userSchema: Schema = new Schema({
         type: Number,
         default: 0,
     },
-    // avatar_image: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'Image',
-    //     required: true,
-    // },
+    avatar_image: {
+        type: Types.ObjectId,
+        ref: 'Image',
+        required: true,
+    },
 },
     { timestamps: true }
 );
 
-userSchema.pre("save", async function (this: IUser, next: HookNextFunction) {
+userSchema.pre("save", async function (this: IUser, next: HookNextFunction): Promise<any> {
     try {
         // Hash password on save document
         const hash: string = await bcrypt.hash(this.password, saltRounds);

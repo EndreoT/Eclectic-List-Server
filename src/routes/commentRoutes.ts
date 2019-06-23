@@ -1,9 +1,9 @@
-// const express = require("express");
+import * as express from "express";
 
-// const authController = require("../controllers/authController");
-// const commentController = require("../controllers/commentController");
+// import * as  authController from "../controllers/authController";
+// import * as  commentController from "../controllers/commentController";
 
-// const router = express.Router();
+const router: express.Router = express.Router();
 
 
 // router.get("/", commentController.getAllComments);
@@ -14,4 +14,4 @@
 
 // router.get("/commentsForPost/:postId", commentController.getCommentsForPost);
 
-// module.exports = router;
+export const commentRouter = router;

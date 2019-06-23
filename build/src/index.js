@@ -10,10 +10,10 @@ const express = require("express");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
 // Routes
-// import authRoutes = require("./routes/authorization");
+const authorization_1 = require("./routes/authorization");
 const categoryRoutes_1 = require("./routes/categoryRoutes");
-// import commentRoutes = require("./routes/commentRoutes");
-// import imageRoutes = require("./routes/imageRoutes");
+const commentRoutes_1 = require("./routes/commentRoutes");
+const imageRoutes_1 = require("./routes/imageRoutes");
 const postRoutes_1 = require("./routes/postRoutes");
 const userRoutes_1 = require("./routes/userRoutes");
 class App {
@@ -54,10 +54,10 @@ class App {
     }
     initRoutes() {
         this.app.use("/api/categories", categoryRoutes_1.categoryRouter);
-        // app.use("/api/comments", commentRoutes);
+        this.app.use("/api/comments", commentRoutes_1.commentRouter);
         this.app.use("/api/posts", postRoutes_1.postRouter);
-        // app.use("/api/auth", authRoutes);
-        // app.use('/api/images', imageRoutes);
+        this.app.use("/api/auth", authorization_1.authRouter);
+        this.app.use('/api/images', imageRoutes_1.imageRouter);
         this.app.use('/users', userRoutes_1.userRouter);
     }
     initExpressConnection() {

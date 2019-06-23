@@ -32,6 +32,11 @@ const userSchema = new mongoose_1.Schema({
         type: Number,
         default: 0,
     },
+    avatar_image: {
+        type: mongoose_1.Types.ObjectId,
+        ref: 'Image',
+        required: true,
+    },
 }, { timestamps: true });
 userSchema.pre("save", async function (next) {
     try {

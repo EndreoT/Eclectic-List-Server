@@ -9,12 +9,12 @@ import * as morgan from "morgan";
 import * as mongoose from "mongoose";
 
 // Routes
-// import authRoutes = require("./routes/authorization");
+import { authRouter } from "./routes/authorization";
 import { categoryRouter } from './routes/categoryRoutes';
-// import commentRoutes = require("./routes/commentRoutes");
-// import imageRoutes = require("./routes/imageRoutes");
-import {postRouter} from "./routes/postRoutes";
-import {userRouter} from "./routes/userRoutes";
+import { commentRouter } from "./routes/commentRoutes";
+import { imageRouter } from "./routes/imageRoutes";
+import { postRouter } from "./routes/postRoutes";
+import { userRouter } from "./routes/userRoutes";
 
 
 class App {
@@ -62,10 +62,10 @@ class App {
 
     private initRoutes(): void {
         this.app.use("/api/categories", categoryRouter);
-        // app.use("/api/comments", commentRoutes);
+        this.app.use("/api/comments", commentRouter);
         this.app.use("/api/posts", postRouter);
-        // app.use("/api/auth", authRoutes);
-        // app.use('/api/images', imageRoutes);
+        this.app.use("/api/auth", authRouter);
+        this.app.use('/api/images', imageRouter);
         this.app.use('/users', userRouter);
     }
 
