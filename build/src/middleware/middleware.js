@@ -13,4 +13,11 @@ function sanitizeComment(req, res, next) {
     next();
 }
 exports.sanitizeComment = sanitizeComment;
+function sanitizeUser(req, res, next) {
+    filter_1.sanitizeBody("user_name").trim().escape();
+    filter_1.sanitizeBody("email").trim().escape();
+    filter_1.sanitizeBody("password").trim().escape();
+    next();
+}
+exports.sanitizeUser = sanitizeUser;
 //# sourceMappingURL=middleware.js.map

@@ -1,20 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// import * as jwt from "jwt-simple";
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
 const moment = require("moment");
 const passport_jwt_1 = require("passport-jwt");
 const user_1 = require("../models/user");
 const image_1 = require("../models/image");
-const secret = process.env.secret;
+const validate = require("../validation/validation");
+const JWT_SECRET = process.env.JWT_SECRET;
 class Auth {
     constructor() {
         this.authenticate = (callback) => passport.authenticate("jwt", { session: false, failWithError: true }, callback);
-        // public authenticate = () => passport.authenticate("jwt", { session: false, failWithError: true });
-        // public authenticate = (req: Request, res: Response, next: NextFunction) => {
-        //     passport.authenticate("jwt", { session: false, failWithError: true })(req, res, next);
-        // };
         this.validateJWT = (req, res, next) => {
             this.authenticate(function (err, user, info) {
                 console.log(err);
@@ -34,15 +30,15 @@ class Auth {
             })(req, res, next);
         };
         this.genToken = (user) => {
+            const expiresInDays = 7;
             const expires = moment().utc().add({ days: 7 }).unix();
-            const body = { _id: user._id, username: user.username, email: user.email };
+            const body = {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+            };
             //Sign the JWT token and populate the payload with the user email and id
-            const token = jwt.sign({ user: body }, secret);
-            // const token: string = jwt.sign({
-            //     user:
-            //         exp: expires,
-            //     username: user.username
-            // }, process.env.JWT_SECRET);
+            const token = jwt.sign({ user: body }, JWT_SECRET, { expiresIn: String(expiresInDays) + 'd' });
             return {
                 token,
                 expires: moment.unix(expires).format(),
@@ -51,15 +47,16 @@ class Auth {
         };
         // // Signup authentication
         this.signup = async (req, res, next) => {
-            // usernameField: "username",
-            // passwordField: "password",
-            // passReqToCallback: true,
+            const { error } = validate.validateCreateUser(req.body);
+            if (error) {
+                return res.status(400).json(error.details[0]);
+            }
             try {
-                // Determine if username or password already exists
+                // Determine if username or email already exists
                 const result = await Promise.all([
                     user_1.User.findOne({ email: req.body.email }),
                     user_1.User.findOne({ username: req.body.username }),
-                    image_1.Image.find({ caption: 'default' })
+                    image_1.Image.find({ caption: 'default' }),
                 ]);
                 if (result[0] || result[1]) {
                     return res.json({ message: "Username or email already exists." });
@@ -77,7 +74,8 @@ class Auth {
                     });
                     const savedUser = await user.save();
                     const populatedUser = await user_1.User.findById(savedUser._id).populate("avatar_image");
-                    return res.json({ populatedUser, message: "Signup successful." });
+                    const authSuccess = this.genToken(populatedUser);
+                    return res.json(authSuccess);
                 }
             }
             catch (error) {
@@ -125,18 +123,6 @@ class Auth {
                     return done(null, { _id: user._id, username: user.username });
                 });
             });
-            // passport.use(new Strategy({
-            //     secretOrKey: secret,
-            //     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            // },
-            //     async (token, done) => {
-            //         try {
-            //             return done(null, token.user);
-            //         } catch (error) {
-            //             return done(error);
-            //         }
-            //     }
-            // ));
         };
         passport.use("jwt", this.getStrategy());
         passport.initialize();

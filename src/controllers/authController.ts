@@ -1,13 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
-// import * as jwt from "jwt-simple";
 import * as jwt from "jsonwebtoken";
 import * as passport from "passport";
 import * as moment from "moment";
 import { Strategy, ExtractJwt } from "passport-jwt";
+
 import { IUser, User } from "../models/user";
 import { Image } from '../models/image';
+import * as validate from '../validation/validation';
+import { ValidationError } from "joi";
 
-const secret: any = process.env.secret;
+const JWT_SECRET: any = process.env.JWT_SECRET;
+
+interface IauthSuccessObj {
+    user: IUser;
+    token: string;
+    expires: string;
+}
 
 class Auth {
 
@@ -16,11 +24,7 @@ class Auth {
         passport.initialize();
     }
 
-    public authenticate = (callback: any) => passport.authenticate("jwt", { session: false, failWithError: true }, callback);
-    // public authenticate = () => passport.authenticate("jwt", { session: false, failWithError: true });
-    // public authenticate = (req: Request, res: Response, next: NextFunction) => {
-    //     passport.authenticate("jwt", { session: false, failWithError: true })(req, res, next);
-    // };
+    private authenticate = (callback: any) => passport.authenticate("jwt", { session: false, failWithError: true }, callback);
 
     public validateJWT = (req: Request, res: Response, next: NextFunction) => {
         this.authenticate(function (err: any, user: any, info: any) {
@@ -40,19 +44,17 @@ class Auth {
         })(req, res, next);
     }
 
-    private genToken = (user: IUser): { token: string, expires: string, user: IUser } => {
+    private genToken = (user: IUser): IauthSuccessObj => {
+        const expiresInDays = 7;
         const expires: number = moment().utc().add({ days: 7 }).unix();
-        const body = { _id: user._id, username: user.username, email: user.email };
+        const body = {
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+        };
         //Sign the JWT token and populate the payload with the user email and id
-        const token: string = jwt.sign({ user: body }, secret,
-            //  {expiresIn: "1h"}                      <- Change for production??
+        const token: string = jwt.sign({ user: body }, JWT_SECRET, { expiresIn: String(expiresInDays) + 'd' }
         );
-        // const token: string = jwt.sign({
-        //     user:
-
-        //         exp: expires,
-        //     username: user.username
-        // }, process.env.JWT_SECRET);
 
         return {
             token,
@@ -63,23 +65,24 @@ class Auth {
 
     // // Signup authentication
     public signup = async (req: Request, res: Response, next: NextFunction) => {
-
-        // usernameField: "username",
-        // passwordField: "password",
-        // passReqToCallback: true,
-
+        const { error }: { error: ValidationError } = validate.validateCreateUser(req.body);
+        if (error) {
+            return res.status(400).json(error.details[0]);
+        }
 
         try {
-            // Determine if username or password already exists
-            const result = await Promise.all([
-                User.findOne({ email: req.body.email }),
-                User.findOne({ username: req.body.username }),
-                Image.find({ caption: 'default' })
-            ]);
+            // Determine if username or email already exists
+            const result = await Promise.all(
+                [
+                    User.findOne({ email: req.body.email }),
+                    User.findOne({ username: req.body.username }),
+                    Image.find({ caption: 'default' }),
+                ]
+            );
             if (result[0] || result[1]) {
-                return res.json({ message: "Username or email already exists." })
+                return res.json({ message: "Username or email already exists." });
             } else if (!result[2]) {
-                return res.json({ message: "Cannot save. No default avatar image exists" })
+                return res.json({ message: "Cannot save. No default avatar image exists" });
             } else {
                 // Success. Create new user
                 const user = new User({
@@ -88,9 +91,10 @@ class Auth {
                     password: req.body.password,
                     avatar_image: result[2][0]._id,
                 });
-                const savedUser = await user.save();
-                const populatedUser = await User.findById(savedUser._id).populate("avatar_image")
-                return res.json({ populatedUser, message: "Signup successful." });
+                const savedUser: IUser = await user.save();
+                const populatedUser: any = await User.findById(savedUser._id).populate("avatar_image");
+                const authSuccess: IauthSuccessObj = this.genToken(populatedUser);
+                return res.json(authSuccess);
             }
         } catch (error) {
             return res.json(error);
@@ -145,20 +149,7 @@ class Auth {
                 return done(null, { _id: user._id, username: user.username });
             });
         });
-        // passport.use(new Strategy({
-        //     secretOrKey: secret,
-        //     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        // },
-        //     async (token, done) => {
-        //         try {
-        //             return done(null, token.user);
-        //         } catch (error) {
-        //             return done(error);
-        //         }
-        //     }
-        // ));
     }
-
 }
 
 export const auth: Auth = new Auth();

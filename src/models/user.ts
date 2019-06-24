@@ -28,8 +28,8 @@ const userSchema: Schema = new Schema({
     email: {
         type: String,
         required: true,
-        select: false,
-        minlength: 1,
+        // select: false,
+        minlength: 3,
         maxlength: 255,
         unique: true,
     },
@@ -37,8 +37,8 @@ const userSchema: Schema = new Schema({
         type: String,
         required: true,
         select: false,
-        minlength: 6,
-        maxlength: 1024,
+        minlength: 3,
+        maxlength: 255,
     },
     number_of_posts: {
         type: Number,

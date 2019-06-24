@@ -3,6 +3,7 @@ import * as express from "express";
 import {auth} from "../controllers/authController";
 import * as userController from "../controllers/userController";
 
+
 const router: express.Router = express.Router();
 
 
@@ -12,6 +13,6 @@ router.get("/:user", userController.getUser);
 
 router.get("/userById/:user", userController.getUserById);
 
-router.get("/fullUser/:userId", auth.authenticate, userController.getFullUser);
+router.get("/fullUser/:userId", auth.validateJWT, userController.getFullUser);
 
 export const userRouter = router;

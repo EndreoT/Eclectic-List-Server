@@ -7,6 +7,6 @@ const router = express.Router();
 router.get("/", userController.getAllUsers);
 router.get("/:user", userController.getUser);
 router.get("/userById/:user", userController.getUserById);
-router.get("/fullUser/:userId", authController_1.auth.authenticate, userController.getFullUser);
+router.get("/fullUser/:userId", authController_1.auth.validateJWT, userController.getFullUser);
 exports.userRouter = router;
 //# sourceMappingURL=userRoutes.js.map

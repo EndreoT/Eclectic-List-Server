@@ -14,3 +14,10 @@ export function sanitizeComment(req: Request, res: Response, next: NextFunction)
   sanitizeBody("comment").trim().escape();
   next();
 }
+
+export function sanitizeUser(req: Request, res: Response, next: NextFunction): void {
+  sanitizeBody("user_name").trim().escape();
+  sanitizeBody("email").trim().escape();
+  sanitizeBody("password").trim().escape();
+  next();
+}
