@@ -1,18 +1,191 @@
+import { Request, Response, NextFunction } from 'express';
+// import * as jwt from "jwt-simple";
+import * as jwt from "jsonwebtoken";
+import * as passport from "passport";
+import * as moment from "moment";
+import { Strategy, ExtractJwt } from "passport-jwt";
+import { IUser, User } from "../models/user";
+import { Image } from '../models/image';
+
+const secret: any = process.env.secret;
+
+class Auth {
+
+    constructor() {
+        passport.use("jwt", this.getStrategy());
+        passport.initialize();
+    }
+
+    public authenticate = (callback: any) => passport.authenticate("jwt", { session: false, failWithError: true }, callback);
+    // public authenticate = () => passport.authenticate("jwt", { session: false, failWithError: true });
+    // public authenticate = (req: Request, res: Response, next: NextFunction) => {
+    //     passport.authenticate("jwt", { session: false, failWithError: true })(req, res, next);
+    // };
+
+    public validateJWT = (req: Request, res: Response, next: NextFunction) => {
+        this.authenticate(function (err: any, user: any, info: any) {
+            console.log(err)
+            console.log(user)
+            console.log(info)
+            // if (err) { return next(err); }
+            // if (!user) { return res.redirect('/login'); }
+            // req.logIn(user, function(err) {
+            //   if (err) { return next(err); }
+            //   return res.json(user);
+            // });
+            req.login(user, { session: false }, async (error) => {
+                if (error) return next(error);
+                return res.json({ user });
+            });
+        })(req, res, next);
+    }
+
+    private genToken = (user: IUser): { token: string, expires: string, user: IUser } => {
+        const expires: number = moment().utc().add({ days: 7 }).unix();
+        const body = { _id: user._id, username: user.username, email: user.email };
+        //Sign the JWT token and populate the payload with the user email and id
+        const token: string = jwt.sign({ user: body }, secret,
+            //  {expiresIn: "1h"}                      <- Change for production??
+        );
+        // const token: string = jwt.sign({
+        //     user:
+
+        //         exp: expires,
+        //     username: user.username
+        // }, process.env.JWT_SECRET);
+
+        return {
+            token,
+            expires: moment.unix(expires).format(),
+            user,
+        };
+    }
+
+    // // Signup authentication
+    public signup = async (req: Request, res: Response, next: NextFunction) => {
+
+        // usernameField: "username",
+        // passwordField: "password",
+        // passReqToCallback: true,
+
+
+        try {
+            // Determine if username or password already exists
+            const result = await Promise.all([
+                User.findOne({ email: req.body.email }),
+                User.findOne({ username: req.body.username }),
+                Image.find({ caption: 'default' })
+            ]);
+            if (result[0] || result[1]) {
+                return res.json({ message: "Username or email already exists." })
+            } else if (!result[2]) {
+                return res.json({ message: "Cannot save. No default avatar image exists" })
+            } else {
+                // Success. Create new user
+                const user = new User({
+                    username: req.body.username,
+                    email: req.body.email,
+                    password: req.body.password,
+                    avatar_image: result[2][0]._id,
+                });
+                const savedUser = await user.save();
+                const populatedUser = await User.findById(savedUser._id).populate("avatar_image")
+                return res.json({ populatedUser, message: "Signup successful." });
+            }
+        } catch (error) {
+            return res.json(error);
+        }
+    }
+
+
+    public login = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // req.checkBody("username", "Invalid username").notEmpty();
+            // req.checkBody("password", "Invalid password").notEmpty();
+
+            // let errors = req.validationErrors();
+            // if (errors) throw errors;
+
+            const user = await User.findOne({ "username": req.body.username }).exec();
+
+            if (user === null) throw new Error("User not found");
+
+            const success: boolean = await user.isValidPassword(req.body.password);
+            if (!success) throw new Error("Invalid password");
+
+            const token = this.genToken(user)
+            return res.status(200).json(token);
+        } catch (err) {
+            console.log(err)
+            return res.status(401).json({ "message": "Invalid credentials", "errors": err });
+        }
+    }
+
+    private getStrategy = (): Strategy => {
+        const params = {
+            secretOrKey: process.env.secret,
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            passReqToCallback: true,
+        };
+
+        return new Strategy(params, (req: any, payload: any, done: any) => {
+
+            User.findOne({ "_id": payload.user._id }, (err, user) => {
+                /* istanbul ignore next: passport response */
+                console.log(err)
+                console.log(user)
+                if (err) {
+                    return done(err);
+                }
+                /* istanbul ignore next: passport response */
+                if (user === null) {
+                    return done(null, false, { message: "The user in the token was not found" });
+                }
+
+                return done(null, { _id: user._id, username: user.username });
+            });
+        });
+        // passport.use(new Strategy({
+        //     secretOrKey: secret,
+        //     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        // },
+        //     async (token, done) => {
+        //         try {
+        //             return done(null, token.user);
+        //         } catch (error) {
+        //             return done(error);
+        //         }
+        //     }
+        // ));
+    }
+
+}
+
+export const auth: Auth = new Auth();
+
+
+
+
 // import { sanitizeBody } from "express-validator/filter";
-// const passport = require("passport");
-// const ExtractJWT = require('passport-jwt').ExtractJwt;
-// const JwtStrategy = require('passport-jwt').Strategy;
-// const LocalStrategy = require("passport-local").Strategy;
+// import * as passport from "passport";
+// import { Strategy, ExtractJwt } from "passport-jwt";
+// import * as ExtractJWTImport from 'passport-jwt';
+// import * as JwtStrategy from 'passport-jwt').Strategy;
+// import  {s} from "passport-local");
 
-// const secret = process.env.secret;
-// const validation = require("../validation/validation");
-// const Image = require('../models/image');
-// const User = require("../models/user");
 
-// // Authentication implementation for JSON Web Token
-// passport.use(new JwtStrategy({
+// const ExtractJwt = ExtractJWTImport.Strategy
+// const JwtStrategy
+
+// const secret: string | undefined = process.env.secret;
+// import * as validation from "../validation/validation";
+// import { Image } from '../models/image';
+// import { User } from "../models/user";
+
+// Authentication implementation for JSON Web Token
+// passport.use(new Strategy({
 //     secretOrKey: secret,
-//     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+//     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 // },
 //     async (token, done) => {
 //         try {

@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
-// import authController = require("../controllers/authController");
+const authController_1 = require("../controllers/authController");
 const router = express.Router();
-// router.get('/', authController.authenticateJWT);
-// router.post('/signup', authController.signup);
-// router.post("/login", authController.login);
+router.post('/validate', authController_1.auth.validateJWT);
+router.post('/signup', authController_1.auth.signup);
+router.post("/login", authController_1.auth.login);
 exports.authRouter = router;
 //# sourceMappingURL=authorization.js.map

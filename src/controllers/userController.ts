@@ -36,8 +36,9 @@ export async function getUserById(req: Request, res: Response, next: NextFunctio
 }
 
 // Retrieves all data about user except password
-export async function getFullUser(req: IGetUserAuthInfoRequest, res: Response, next: NextFunction): Promise<Response | void> {
+export async function getFullUser(req: any, res: Response, next: NextFunction): Promise<Response | void> {
   try {
+    console.log('full user')
     if (req.user._id !== req.params.userId) { //req.user field is added to response by passport.js authentication
       return res.status(401).send("Credentials do not match.");
     }

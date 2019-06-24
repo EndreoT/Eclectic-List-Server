@@ -5,6 +5,6 @@ export interface IUser extends Document {
     password: string;
     number_of_posts: number;
     avatar_image: Types.ObjectId;
-    isValidPassword: Function;
+    isValidPassword(password: string): Promise<boolean>;
 }
 export declare const User: Model<IUser>;

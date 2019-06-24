@@ -1,14 +1,14 @@
 import * as express from "express";
 
-// import authController = require("../controllers/authController");
+import {auth} from "../controllers/authController";
 
 const router: express.Router = express.Router();
 
 
-// router.get('/', authController.authenticateJWT);
+router.post('/validate', auth.validateJWT);
 
-// router.post('/signup', authController.signup);
+router.post('/signup', auth.signup);
 
-// router.post("/login", authController.login);
+router.post("/login", auth.login);
 
 export const authRouter = router;

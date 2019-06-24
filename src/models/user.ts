@@ -14,7 +14,7 @@ export interface IUser extends Document {
     password: string;
     number_of_posts: number;
     avatar_image: Types.ObjectId;
-    isValidPassword: Function;
+    isValidPassword(password: string): Promise<boolean>;
 }
 
 const userSchema: Schema = new Schema({
@@ -74,22 +74,22 @@ userSchema.methods.isValidPassword = async function (password: string): Promise<
 };
 
 
-interface IAuthTokenUserData {
-    _id: string;
-    username: string;
-    email: string;
-}
+// interface IAuthTokenUserData {
+//     _id: string;
+//     username: string;
+//     email: string;
+// }
 
-userSchema.statics.generateAuthToken = function (userData: IAuthTokenUserData): string {
+// userSchema.statics.generateAuthToken = function (userData: IAuthTokenUserData): string {
 
-    //We don't want to store the sensitive information such as the
-    //user password in the token so we pick only the email and id
-    const body: IAuthTokenUserData = { _id: userData._id, username: userData.username, email: userData.email };
-    //Sign the JWT token and populate the payload with the user email and id
-    const token = jwt.sign({ user: body }, secret,
-        //  {expiresIn: "1h"}                      <- Change for production??
-    );
-    return token;
-};
+//     //We don't want to store the sensitive information such as the
+//     //user password in the token so we pick only the email and id
+//     const body: IAuthTokenUserData = { _id: userData._id, username: userData.username, email: userData.email };
+//     //Sign the JWT token and populate the payload with the user email and id
+//     const token = jwt.sign({ user: body }, secret,
+//         //  {expiresIn: "1h"}                      <- Change for production??
+//     );
+//     return token;
+// };
 
 export const User: Model<IUser> = model<IUser>("User", userSchema);
