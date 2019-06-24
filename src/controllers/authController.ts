@@ -92,9 +92,12 @@ class Auth {
                     avatar_image: result[2][0]._id,
                 });
                 const savedUser: IUser = await user.save();
-                const populatedUser: any = await User.findById(savedUser._id).populate("avatar_image");
-                const authSuccess: IauthSuccessObj = this.genToken(populatedUser);
-                return res.json(authSuccess);
+                const populatedUser: IUser | null = await User.findById(savedUser._id).populate("avatar_image");
+                if (populatedUser) {
+                    const authSuccess: IauthSuccessObj = this.genToken(populatedUser);
+                    return res.json(authSuccess);
+                }
+                throw new Error(`User with id ${savedUser._id} does not exist`);
             }
         } catch (error) {
             return res.json(error);
@@ -104,21 +107,21 @@ class Auth {
 
     public login = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            // req.checkBody("username", "Invalid username").notEmpty();
-            // req.checkBody("password", "Invalid password").notEmpty();
+            const { error }: { error: ValidationError } = validate.validateAuthenticateUser(req.body);
+            if (error) {
+                return res.status(400).json(error.details[0]);
+            }
 
-            // let errors = req.validationErrors();
-            // if (errors) throw errors;
+            const user: IUser | null = await User.findOne({ "username": req.body.username });
 
-            const user = await User.findOne({ "username": req.body.username }).exec();
-
-            if (user === null) throw new Error("User not found");
+            if (!user) throw new Error("User not found");
 
             const success: boolean = await user.isValidPassword(req.body.password);
             if (!success) throw new Error("Invalid password");
 
-            const token = this.genToken(user)
-            return res.status(200).json(token);
+
+            const authSuccess: IauthSuccessObj = this.genToken(user);
+            return res.status(200).json(authSuccess);
         } catch (err) {
             console.log(err)
             return res.status(401).json({ "message": "Invalid credentials", "errors": err });
