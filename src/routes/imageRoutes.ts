@@ -9,18 +9,18 @@ const router: express.Router = express.Router();
 
 router.get('/', imageController.getAllImages);
 
-// router.get('/avatar', imageController.getAllAvatarImages);
+router.get('/avatar', imageController.getAllAvatarImages);
 
-// router.get('/getImageById/:imageId', imageController.getImageById);
+router.get('/getImageById/:imageId', imageController.getImageById);
 
-// router.get('/getImagesForPost/:postId', imageController.getImagesForPost);
+router.get('/getImagesForPost/:postId', imageController.getImagesForPost);
 
-// router.post('/postAvatar', imageController.postAvatarImage);
+router.post('/postAvatar', imageController.postAvatarImage);
 
-// router.post('/postImage', imageController.postPostImage);
+router.post('/postImage', imageController.postPostImage);
 
-// router.post('/postMultipleImages/:postId', imageController.postMultipleImages);
+router.post('/postMultipleImages/:postId', imageController.postMultipleImages);
 
-// router.put('/setAvatarImage', imageController.setUserAvatarImage);
+router.put('/setAvatarImage', imageController.setUserAvatarImage);
 
 export const imageRouter = router;

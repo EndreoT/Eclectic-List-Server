@@ -37,7 +37,7 @@ export function validateAuthenticateUser(user: IUser): Joi.ValidationResult<IUse
         password: Joi.string().min(5).max(255).required(),
     };
     return Joi.validate(user, schema);
-};
+}
 
 // Validate comment fields
 export function validateComment(comment: IComment): Joi.ValidationResult<IComment> {
@@ -45,6 +45,6 @@ export function validateComment(comment: IComment): Joi.ValidationResult<ICommen
         comment: Joi.string().min(postModelConstants.subjectMin).max(postModelConstants.subjectMax).required(),
         postId: Joi.string().required(),
         userId: Joi.string().required(),
-    }
+    };
     return Joi.validate(comment, schema);
-};
+}

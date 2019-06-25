@@ -34,7 +34,6 @@ function validateAuthenticateUser(user) {
     return Joi.validate(user, schema);
 }
 exports.validateAuthenticateUser = validateAuthenticateUser;
-;
 // Validate comment fields
 function validateComment(comment) {
     const schema = {
@@ -45,5 +44,4 @@ function validateComment(comment) {
     return Joi.validate(comment, schema);
 }
 exports.validateComment = validateComment;
-;
 //# sourceMappingURL=validation.js.map
