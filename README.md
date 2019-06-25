@@ -14,6 +14,12 @@ Server: https://eclectic-list-server.herokuapp.com/<endpoint>
 Server example: https://eclectic-list-server.herokuapp.com/api/posts
 ```
 
+### Results 
+This app uses the MEVN stack, which stands for MongoDB for the database, Express.js for the web server framework, Vue.js for the frontend framework, and Node.js for the run-time environment. Securely access protected routes using a JSON Web Token (JWT), and backend authentication is routed through the Passport.js middleware. The Vuex library for Vue allows for persistent user login. Lastly, images are stored using Cloudinary hosting. Also, the server was recently rewritten in Typescript!
+
+This app is hosted on two Heroku apps: First, the server side creates a RESTful API. An example of the the '/api/posts' endpoint can be found here. Second, the Vue.js app is also served by an Express.js server on Heroku. 
+
+
 ### Installation
 ```
 cd path/to/eclectic-list-server
@@ -35,7 +41,3 @@ mLabDB=<mongoDB url>
 secret = <private secret>
 ```
 
-### Results 
-This app uses the MEVN stack, which stands for MongoDB for the database, Express.js for the web server framework, Vue.js for the frontend framework, and Node.js for the run-time environment. Securely access protected routes using a JSON Web Token (JWT), and backend authentication is routed through the Passport.js middleware. The Vuex library for Vue allows for persistent user login. Lastly, images are stored using Cloudinary hosting.
-
-This app is hosted on two Heroku apps: First, the server side creates a RESTful API. An example of the the '/api/posts' endpoint can be found here. Second, the Vue.js app is also served by an Express.js server on Heroku. 
