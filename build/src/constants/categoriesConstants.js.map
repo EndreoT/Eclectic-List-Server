@@ -1,0 +1,1 @@
+{"version":3,"file":"categoriesConstants.js","sourceRoot":"","sources":["../../../src/constants/categoriesConstants.ts"],"names":[],"mappings":";;AAAA,MAAM,UAAU,GAAgB,IAAI,GAAG,CACnC;IACI,UAAU,EAAE,YAAY,EAAE,MAAM,EAAE,WAAW,EAAE,OAAO,EAAE,OAAO;CAClE,CACJ,CAAC;AAEW,QAAA,iBAAiB,GAAG,UAAU,CAAC"}
