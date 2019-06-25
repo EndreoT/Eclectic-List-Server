@@ -24,6 +24,7 @@ const userSchema: Schema = new Schema({
         required: true,
         minlength: 1,
         maxlength: 50,
+        trim: true,
     },
     email: {
         type: String,
@@ -32,6 +33,7 @@ const userSchema: Schema = new Schema({
         minlength: 3,
         maxlength: 255,
         unique: true,
+        trim: true,
     },
     password: { // Encrypted using bcrypt
         type: String,
@@ -39,6 +41,7 @@ const userSchema: Schema = new Schema({
         select: false,
         minlength: 3,
         maxlength: 255,
+        trim: true,
     },
     number_of_posts: {
         type: Number,

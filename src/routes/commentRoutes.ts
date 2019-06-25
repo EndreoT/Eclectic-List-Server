@@ -1,6 +1,6 @@
 import * as express from "express";
 
-// import * as  authController from "../controllers/authController";
+import { auth } from "../controllers/authController";
 import * as  commentController from "../controllers/commentController";
 import * as internalMiddleware from '../middleware/middleware';
 
@@ -11,8 +11,8 @@ router.get("/", commentController.getAllComments);
 
 router.get("/:commentId", commentController.getComment);
 
-router.post("/",internalMiddleware.sanitizeComment, commentController.createComment);
-// router.post("/", authController.authenticateJWT, commentController.createComment);
+router.post("/", internalMiddleware.sanitizeComment, commentController.createComment);
+// router.post("/", internalMiddleware.sanitizeComment, auth.validateJWT, commentController.createComment);
 
 router.get("/commentsForPost/:postId", commentController.getCommentsForPost);
 

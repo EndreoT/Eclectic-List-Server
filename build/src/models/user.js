@@ -11,6 +11,7 @@ const userSchema = new mongoose_1.Schema({
         required: true,
         minlength: 1,
         maxlength: 50,
+        trim: true,
     },
     email: {
         type: String,
@@ -19,6 +20,7 @@ const userSchema = new mongoose_1.Schema({
         minlength: 3,
         maxlength: 255,
         unique: true,
+        trim: true,
     },
     password: {
         type: String,
@@ -26,6 +28,7 @@ const userSchema = new mongoose_1.Schema({
         select: false,
         minlength: 3,
         maxlength: 255,
+        trim: true,
     },
     number_of_posts: {
         type: Number,

@@ -8,6 +8,9 @@ import * as express from 'express';
 import * as morgan from "morgan";
 import * as mongoose from "mongoose";
 
+// Internal middleware
+import {auth} from "./controllers/authController";
+
 // Routes
 import { authRouter } from "./routes/authorization";
 import { categoryRouter } from './routes/categoryRoutes';
@@ -58,6 +61,7 @@ class App {
         this.app.use(cors());
         this.app.use(morgan("tiny"));
         this.app.use(express.json());
+        this.app.use(auth.initialize());
     }
 
     private initRoutes(): void {

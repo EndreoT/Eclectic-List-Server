@@ -9,6 +9,8 @@ const cors = require("cors");
 const express = require("express");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
+// Internal middleware
+const authController_1 = require("./controllers/authController");
 // Routes
 const authorization_1 = require("./routes/authorization");
 const categoryRoutes_1 = require("./routes/categoryRoutes");
@@ -51,6 +53,7 @@ class App {
         this.app.use(cors());
         this.app.use(morgan("tiny"));
         this.app.use(express.json());
+        this.app.use(authController_1.auth.initialize());
     }
     initRoutes() {
         this.app.use("/api/categories", categoryRoutes_1.categoryRouter);

@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 declare class Auth {
-    constructor();
+    initialize(): import("express").Handler;
     private authenticate;
-    validateJWT: (req: Request, res: Response, next: NextFunction) => void;
+    validateJWT: (req: Request, res: Response, next: NextFunction) => any;
+    private authorizeUser;
+    authorizeUserBody: (req: Request, res: Response, next: NextFunction) => any;
+    authorizeUserParams: (req: Request, res: Response, next: NextFunction) => any;
     private genToken;
     signup: (req: Request, res: Response, next: NextFunction) => Promise<import("express-serve-static-core").Response>;
     login: (req: Request, res: Response, next: NextFunction) => Promise<import("express-serve-static-core").Response>;

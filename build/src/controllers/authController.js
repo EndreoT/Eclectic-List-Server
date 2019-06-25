@@ -10,24 +10,54 @@ const validate = require("../validation/validation");
 const JWT_SECRET = process.env.JWT_SECRET;
 class Auth {
     constructor() {
-        this.authenticate = (callback) => passport.authenticate("jwt", { session: false, failWithError: true }, callback);
+        // constructor() {
+        //     passport.use("jwt", this.getStrategy());
+        // }
+        this.authenticate = (callback) => {
+            return passport.authenticate("jwt", { session: false, failWithError: true }, callback);
+        };
         this.validateJWT = (req, res, next) => {
-            this.authenticate(function (err, user, info) {
-                console.log(err);
-                console.log(user);
-                console.log(info);
-                // if (err) { return next(err); }
-                // if (!user) { return res.redirect('/login'); }
-                // req.logIn(user, function(err) {
-                //   if (err) { return next(err); }
-                //   return res.json(user);
-                // });
-                req.login(user, { session: false }, async (error) => {
-                    if (error)
-                        return next(error);
-                    return res.json({ user });
-                });
+            return this.authenticate((err, user, info) => {
+                if (err) {
+                    return next(err);
+                }
+                if (!user) {
+                    if (info.name === "TokenExpiredError") {
+                        return res.status(401).json({ message: "Your token has expired. Please generate a new one" });
+                    }
+                    else {
+                        return res.status(401).json({ message: info.message });
+                    }
+                }
+                next();
             })(req, res, next);
+        };
+        this.authorizeUser = (req, res, next) => {
+            return this.authenticate((err, user, info) => {
+                if (err) {
+                    return next(err);
+                }
+                if (!user) {
+                    if (info.name === "TokenExpiredError") {
+                        return res.status(401).json({ message: "Your token has expired. Please generate a new one" });
+                    }
+                    else {
+                        return res.status(401).json({ message: info.message });
+                    }
+                }
+                if (String(user._id) !== res.locals.userIdLocation) {
+                    return res.status(401).json({ message: "userId in request body does not match user id in JWT" });
+                }
+                return next();
+            })(req, res, next);
+        };
+        this.authorizeUserBody = (req, res, next) => {
+            res.locals.userIdLocation = req.body.userId;
+            return this.authorizeUser(req, res, next);
+        };
+        this.authorizeUserParams = (req, res, next) => {
+            res.locals.userIdLocation = req.params.userId;
+            return this.authorizeUser(req, res, next);
         };
         this.genToken = (user) => {
             const expiresInDays = 7;
@@ -74,8 +104,11 @@ class Auth {
                     });
                     const savedUser = await user.save();
                     const populatedUser = await user_1.User.findById(savedUser._id).populate("avatar_image");
-                    const authSuccess = this.genToken(populatedUser);
-                    return res.json(authSuccess);
+                    if (populatedUser) {
+                        const authSuccess = this.genToken(populatedUser);
+                        return res.json(authSuccess);
+                    }
+                    throw new Error(`User with id ${savedUser._id} does not exist`);
                 }
             }
             catch (error) {
@@ -84,18 +117,18 @@ class Auth {
         };
         this.login = async (req, res, next) => {
             try {
-                // req.checkBody("username", "Invalid username").notEmpty();
-                // req.checkBody("password", "Invalid password").notEmpty();
-                // let errors = req.validationErrors();
-                // if (errors) throw errors;
-                const user = await user_1.User.findOne({ "username": req.body.username }).exec();
-                if (user === null)
+                const { error } = validate.validateAuthenticateUser(req.body);
+                if (error) {
+                    return res.status(400).json(error.details[0]);
+                }
+                const user = await user_1.User.findOne({ "username": req.body.username });
+                if (!user)
                     throw new Error("User not found");
                 const success = await user.isValidPassword(req.body.password);
                 if (!success)
                     throw new Error("Invalid password");
-                const token = this.genToken(user);
-                return res.status(200).json(token);
+                const authSuccess = this.genToken(user);
+                return res.status(200).json(authSuccess);
             }
             catch (err) {
                 console.log(err);
@@ -104,28 +137,29 @@ class Auth {
         };
         this.getStrategy = () => {
             const params = {
-                secretOrKey: process.env.secret,
+                secretOrKey: JWT_SECRET,
                 jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
                 passReqToCallback: true,
             };
             return new passport_jwt_1.Strategy(params, (req, payload, done) => {
                 user_1.User.findOne({ "_id": payload.user._id }, (err, user) => {
-                    /* istanbul ignore next: passport response */
-                    console.log(err);
-                    console.log(user);
                     if (err) {
                         return done(err);
                     }
-                    /* istanbul ignore next: passport response */
                     if (user === null) {
                         return done(null, false, { message: "The user in the token was not found" });
                     }
                     return done(null, { _id: user._id, username: user.username });
+                })
+                    .catch(err => {
+                    console.log('err', err);
                 });
             });
         };
+    }
+    initialize() {
         passport.use("jwt", this.getStrategy());
-        passport.initialize();
+        return passport.initialize();
     }
 }
 exports.auth = new Auth();

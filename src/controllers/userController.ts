@@ -39,9 +39,9 @@ export async function getUserById(req: Request, res: Response, next: NextFunctio
 export async function getFullUser(req: any, res: Response, next: NextFunction): Promise<Response | void> {
   try {
     console.log('full user')
-    if (req.user._id !== req.params.userId) { //req.user field is added to response by passport.js authentication
-      return res.status(401).send("Credentials do not match.");
-    }
+    // if (req.user._id !== req.params.userId) { //req.user field is added to response by passport.js authentication
+    //   return res.status(401).send("Credentials do not match.");
+    // }
     const user: IUser | null = await User.findById(req.params.userId, "-password");
     if (user) return res.status(200).json(user);
     return res.status(404).json({ message: `User '${req.params.user} does not exist.'` });

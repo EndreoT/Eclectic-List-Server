@@ -19,29 +19,63 @@ interface IauthSuccessObj {
 
 class Auth {
 
-    constructor() {
+    // constructor() {
+    //     passport.use("jwt", this.getStrategy());
+    // }
+
+    public initialize() {
         passport.use("jwt", this.getStrategy());
-        passport.initialize();
+        return passport.initialize();
     }
 
-    private authenticate = (callback: any) => passport.authenticate("jwt", { session: false, failWithError: true }, callback);
+    private authenticate = (callback: any): any => {
+        return passport.authenticate("jwt", { session: false, failWithError: true }, callback);
+    };
 
     public validateJWT = (req: Request, res: Response, next: NextFunction) => {
-        this.authenticate(function (err: any, user: any, info: any) {
-            console.log(err)
-            console.log(user)
-            console.log(info)
-            // if (err) { return next(err); }
-            // if (!user) { return res.redirect('/login'); }
-            // req.logIn(user, function(err) {
-            //   if (err) { return next(err); }
-            //   return res.json(user);
-            // });
-            req.login(user, { session: false }, async (error) => {
-                if (error) return next(error);
-                return res.json({ user });
-            });
+        return this.authenticate((err: string, user: IUser, info: any) => {
+            if (err) {
+                return next(err);
+            }
+            if (!user) {
+                if (info.name === "TokenExpiredError") {
+                    return res.status(401).json({ message: "Your token has expired. Please generate a new one" });
+                } else {
+                    return res.status(401).json({ message: info.message });
+                }
+            }
+            next();
         })(req, res, next);
+    }
+
+    private authorizeUser = (req: Request, res: Response, next: NextFunction) => {
+        return this.authenticate((err: string, user: IUser, info: any) => {
+            if (err) {
+                return next(err);
+            }
+            if (!user) {
+                if (info.name === "TokenExpiredError") {
+                    return res.status(401).json({ message: "Your token has expired. Please generate a new one" });
+                } else {
+                    return res.status(401).json({ message: info.message });
+                }
+            }
+            if (String(user._id) !== res.locals.userIdLocation) {
+                return res.status(401).json({ message: "userId in request body does not match user id in JWT" });
+            }
+            return next();
+
+        })(req, res, next);
+    }
+
+    public authorizeUserBody = (req: Request, res: Response, next: NextFunction) => {
+        res.locals.userIdLocation = req.body.userId;
+        return this.authorizeUser(req, res, next);
+    }
+
+    public authorizeUserParams = (req: Request, res: Response, next: NextFunction) => {
+        res.locals.userIdLocation = req.params.userId;
+        return this.authorizeUser(req, res, next);
     }
 
     private genToken = (user: IUser): IauthSuccessObj => {
@@ -53,8 +87,7 @@ class Auth {
             email: user.email,
         };
         //Sign the JWT token and populate the payload with the user email and id
-        const token: string = jwt.sign({ user: body }, JWT_SECRET, { expiresIn: String(expiresInDays) + 'd' }
-        );
+        const token: string = jwt.sign({ user: body }, JWT_SECRET, { expiresIn: String(expiresInDays) + 'd' });
 
         return {
             token,
@@ -130,27 +163,26 @@ class Auth {
 
     private getStrategy = (): Strategy => {
         const params = {
-            secretOrKey: process.env.secret,
+            secretOrKey: JWT_SECRET,
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             passReqToCallback: true,
         };
 
         return new Strategy(params, (req: any, payload: any, done: any) => {
-
             User.findOne({ "_id": payload.user._id }, (err, user) => {
-                /* istanbul ignore next: passport response */
-                console.log(err)
-                console.log(user)
                 if (err) {
                     return done(err);
                 }
-                /* istanbul ignore next: passport response */
+
                 if (user === null) {
                     return done(null, false, { message: "The user in the token was not found" });
                 }
 
                 return done(null, { _id: user._id, username: user.username });
-            });
+            })
+                .catch(err => {
+                    console.log('err', err)
+                })
         });
     }
 }
