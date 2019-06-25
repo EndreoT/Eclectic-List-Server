@@ -137,7 +137,6 @@ class Auth {
         }
     }
 
-
     public login = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { error }: { error: ValidationError } = validate.validateAuthenticateUser(req.body);
@@ -145,7 +144,7 @@ class Auth {
                 return res.status(400).json(error.details[0]);
             }
 
-            const user: IUser | null = await User.findOne({ "username": req.body.username });
+            const user: IUser | null = await User.findOne({ "username": req.body.username }).populate('avatar_image');
 
             if (!user) throw new Error("User not found");
 

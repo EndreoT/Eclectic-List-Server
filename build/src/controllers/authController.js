@@ -121,7 +121,7 @@ class Auth {
                 if (error) {
                     return res.status(400).json(error.details[0]);
                 }
-                const user = await user_1.User.findOne({ "username": req.body.username });
+                const user = await user_1.User.findOne({ "username": req.body.username }).populate('avatar_image');
                 if (!user)
                     throw new Error("User not found");
                 const success = await user.isValidPassword(req.body.password);
