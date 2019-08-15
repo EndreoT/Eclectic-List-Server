@@ -1,8 +1,8 @@
 import * as express from "express";
 
-import { auth } from "../controllers/authController";
-import * as postController from "../controllers/postController";
-import * as internalMiddleWare from '../middleware/middleware';
+import { auth } from "../../controllers/authController";
+import * as postController from "../../controllers/postController";
+import * as internalMiddleWare from '../../middleware/middleware';
 
 
 const router: express.Router = express.Router();

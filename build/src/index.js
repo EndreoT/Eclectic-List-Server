@@ -12,12 +12,13 @@ const mongoose = require("mongoose");
 // Internal middleware
 const authController_1 = require("./controllers/authController");
 // Routes
-const authorization_1 = require("./routes/authorization");
-const categoryRoutes_1 = require("./routes/categoryRoutes");
-const commentRoutes_1 = require("./routes/commentRoutes");
-const imageRoutes_1 = require("./routes/imageRoutes");
-const postRoutes_1 = require("./routes/postRoutes");
-const userRoutes_1 = require("./routes/userRoutes");
+// import { authRouter } from "./routes/auth";
+// import { categoryRouter } from './routes/api/categoryRoutes';
+// import { commentRouter } from "./routes/api/commentRoutes";
+// import { imageRouter } from "./routes/api/imageRoutes";
+// import { postRouter } from "./routes/api/postRoutes";
+// import { userRouter } from "./routes/api/userRoutes";
+const routes_1 = require("./routes");
 class App {
     constructor() {
         this.app = express();
@@ -56,12 +57,13 @@ class App {
         this.app.use(authController_1.auth.initialize());
     }
     initRoutes() {
-        this.app.use("/api/categories", categoryRoutes_1.categoryRouter);
-        this.app.use("/api/comments", commentRoutes_1.commentRouter);
-        this.app.use("/api/posts", postRoutes_1.postRouter);
-        this.app.use("/api/auth", authorization_1.authRouter);
-        this.app.use('/api/images', imageRoutes_1.imageRouter);
-        this.app.use('/users', userRoutes_1.userRouter);
+        // this.app.use("/api/categories", categoryRouter);
+        // this.app.use("/api/comments", commentRouter);
+        // this.app.use("/api/posts", postRouter);
+        // this.app.use("/api/auth", authRouter);
+        // this.app.use('/api/images', imageRouter);
+        // this.app.use('/users', userRouter);
+        this.app.use(routes_1.appRouter);
     }
     initExpressConnection() {
         const port = process.env.PORT || 4000;

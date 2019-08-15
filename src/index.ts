@@ -12,12 +12,14 @@ import * as mongoose from "mongoose";
 import {auth} from "./controllers/authController";
 
 // Routes
-import { authRouter } from "./routes/authorization";
-import { categoryRouter } from './routes/categoryRoutes';
-import { commentRouter } from "./routes/commentRoutes";
-import { imageRouter } from "./routes/imageRoutes";
-import { postRouter } from "./routes/postRoutes";
-import { userRouter } from "./routes/userRoutes";
+// import { authRouter } from "./routes/auth";
+// import { categoryRouter } from './routes/api/categoryRoutes';
+// import { commentRouter } from "./routes/api/commentRoutes";
+// import { imageRouter } from "./routes/api/imageRoutes";
+// import { postRouter } from "./routes/api/postRoutes";
+// import { userRouter } from "./routes/api/userRoutes";
+
+import {appRouter} from './routes';
 
 
 class App {
@@ -65,12 +67,13 @@ class App {
     }
 
     private initRoutes(): void {
-        this.app.use("/api/categories", categoryRouter);
-        this.app.use("/api/comments", commentRouter);
-        this.app.use("/api/posts", postRouter);
-        this.app.use("/api/auth", authRouter);
-        this.app.use('/api/images', imageRouter);
-        this.app.use('/users', userRouter);
+        // this.app.use("/api/categories", categoryRouter);
+        // this.app.use("/api/comments", commentRouter);
+        // this.app.use("/api/posts", postRouter);
+        // this.app.use("/api/auth", authRouter);
+        // this.app.use('/api/images', imageRouter);
+        // this.app.use('/users', userRouter);
+        this.app.use(appRouter);
     }
 
     private initExpressConnection(): void {
