@@ -20,7 +20,7 @@ interface IauthSuccessObj {
 
 class Auth {
 
-    initialize() {
+    initialize = () => {
         passport.use('jwt', this.getStrategy());
         return passport.initialize();
     }
@@ -53,7 +53,7 @@ class Auth {
         };
     };
 
-    validateJWT(req: Request, res: Response, next: NextFunction) {
+    validateJWT = (req: Request, res: Response, next: NextFunction) => {
         return this.authenticate((err: string, user: IUser, info: any) => {
             if (err) {
                 return next(err);
@@ -75,7 +75,7 @@ class Auth {
      * @param {*} res
      * @param {*} next
      */
-    authorizeUser(req: Request, res: Response, next: NextFunction) {
+    authorizeUser = (req: Request, res: Response, next: NextFunction) => {
         return this.authenticate((err: string, user: IUser, info: any) => {
 
             if (err) {
@@ -146,13 +146,12 @@ class Auth {
                 return res.status(400).json(error.details[0]);
             }
 
-            const user: IUser | null = await User.findOne({ "username": req.body.username }).populate('avatar_image');
+            const user: IUser | null = await User.findOne({ "email": req.body.email }).populate('avatar_image');
 
             if (!user) throw new Error("User not found");
 
             const success: boolean = await user.isValidPassword(req.body.password);
             if (!success) throw new Error("Invalid password");
-
 
             const authSuccess: IauthSuccessObj = this.genToken(user);
             return res.status(200).json(authSuccess);

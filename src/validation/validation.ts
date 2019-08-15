@@ -15,7 +15,7 @@ export function validatePost(post: IPost): Joi.ValidationResult<IPost> {
         description: Joi.string().min(postModelConstants.descriptionMin).max(postModelConstants.descriptionMax).required(),
         price: Joi.number().min(0).precision(2).required(),
         category: Joi.string().required(),
-        userId: Joi.string().required(),
+        // userId: Joi.string().required(),
     };
     return Joi.validate(post, schema);
 }
@@ -33,7 +33,7 @@ export function validateCreateUser(user: IUser): Joi.ValidationResult<IUser> {
 // Validate on login
 export function validateAuthenticateUser(user: IUser): Joi.ValidationResult<IUser> {
     const schema = {
-        username: Joi.string().min(1).max(50).required(),
+        email: Joi.string().min(1).max(50).required(),
         password: Joi.string().min(5).max(255).required(),
     };
     return Joi.validate(user, schema);

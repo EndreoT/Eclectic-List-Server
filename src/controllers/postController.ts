@@ -7,6 +7,7 @@ import { IPost, Post } from "../models/post";
 import { IUser, User } from "../models/user";
 import * as validation from "../validation/validation";
 import { ValidationError } from "joi";
+import { auth } from "./authController";
 
 
 interface IPostBody {
@@ -71,25 +72,27 @@ export async function createPost(req: Request, res: Response, next: NextFunction
   if (error) {
     return res.status(400).json(error.details[0]);
   }
+
   try {
-    const [user, category] = await Promise.all(
-      [User.findById(req.body.userId), Category.findOne({ category: req.body.category })]
-    );
-    if (!user || !category) {
-      return res.json({ message: `User with id ${req.body.userId} does not exist.` });
+    const category: ICategory | null = await Category.findOne({ category: req.body.category });
+    
+    if (!category) {
+      return res.json({ message: 'Category does not exist.' });
     }
+
+    const authenticatedUser: any = res.locals.authenticatedUser;
     const postCreateBody: IPostBody = {
       subject: req.body.subject,
       description: req.body.description,
       price: req.body.price,
       category: category._id,
-      user: user._id,
+      user: authenticatedUser._id,
     };
     const post: IPost = new Post(postCreateBody);
     const savedPost: IPost = await post.save();
     await Promise.all(
       [
-        User.findByIdAndUpdate(user._id, { $inc: { number_of_posts: 1 } }),
+        User.findByIdAndUpdate(authenticatedUser._id, { $inc: { number_of_posts: 1 } }),
         Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } })
       ]
     );
@@ -111,6 +114,13 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
     if (!originalPost || !category) {
       return res.json({ message: `Post with id ${req.params.id} does not exist.` });
     }
+
+    const authenticatedUser: any = res.locals.authenticatedUser;
+
+    if (authenticatedUser._id.toString() !== originalPost.user.toString()) {
+      return res.status(422).json({ message: 'You are not authorized to perform this action' });
+    }
+
     if (category._id !== originalPost.category) { //Updates number of posts for category
       await Promise.all([
         Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } }),
@@ -122,7 +132,8 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
       description: req.body.description,
       price: req.body.price,
       category: category._id,
-    }
+      user: authenticatedUser._id.toString(),
+    };
     const post = await Post.findByIdAndUpdate(req.params.id,
       {
         $set: postUpdateBody,
@@ -142,20 +153,28 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
 export async function deletePost(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
     const post: IPost | null = await Post.findById(req.params.id);
+
     if (!post) {
       return res.json({ message: `Post with id ${req.params.id} does not exist.` });
     }
-    const [user, category] = await Promise.all(
-      [User.findById(post.user), Category.findById(post.category)]
-    );
-    if (!user || !category) {
-      return res.json({ message: `User with id ${post.user} does not exist.` });
+
+    const authenticatedUser: any = res.locals.authenticatedUser;
+
+    if (authenticatedUser._id.toString() !== post.user.toString()) {
+      return res.status(422).json({ message: 'You are not authorized to perform this action' });
     }
+
+    const category: ICategory | null = await Category.findById(post.category);
+
+    if (!category) {
+      return res.status(404).json({ message: 'Category does not exist' });
+    }
+
     // Delete post and update number of posts for user and category
     const [deletedPost] = await Promise.all(
       [
         Post.findByIdAndDelete(req.params.id),
-        User.findByIdAndUpdate(user._id, { $inc: { number_of_posts: -1 } }),
+        User.findByIdAndUpdate(authenticatedUser._id, { $inc: { number_of_posts: -1 } }),
         Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: -1 } }),
         Image.deleteMany({ post: post._id }),
       ]

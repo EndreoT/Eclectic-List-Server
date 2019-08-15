@@ -16,9 +16,9 @@ router.get("/postsByCategory/:category", postController.getPostsByCategory);
 
 router.get("/postsByUser/:user", postController.getPostsByUser);
 
-router.post("/createPost", auth.authorizeUser, internalMiddleWare.sanitizePost, postController.createPost);
+router.post("/createPost", internalMiddleWare.sanitizePost, auth.authorizeUser, postController.createPost);
 
-router.put("/edit/:id", auth.authorizeUser, internalMiddleWare.sanitizePost, postController.updatePost);
+router.put("/edit/:id", internalMiddleWare.sanitizePost, auth.authorizeUser, postController.updatePost);
 
 router.delete("/delete/:id", auth.authorizeUser, postController.deletePost);
 

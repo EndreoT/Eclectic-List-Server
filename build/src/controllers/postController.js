@@ -65,21 +65,22 @@ async function createPost(req, res, next) {
         return res.status(400).json(error.details[0]);
     }
     try {
-        const [user, category] = await Promise.all([user_1.User.findById(req.body.userId), category_1.Category.findOne({ category: req.body.category })]);
-        if (!user || !category) {
-            return res.json({ message: `User with id ${req.body.userId} does not exist.` });
+        const category = await category_1.Category.findOne({ category: req.body.category });
+        if (!category) {
+            return res.json({ message: 'Category does not exist.' });
         }
+        const authenticatedUser = res.locals.authenticatedUser;
         const postCreateBody = {
             subject: req.body.subject,
             description: req.body.description,
             price: req.body.price,
             category: category._id,
-            user: user._id,
+            user: authenticatedUser._id,
         };
         const post = new post_1.Post(postCreateBody);
         const savedPost = await post.save();
         await Promise.all([
-            user_1.User.findByIdAndUpdate(user._id, { $inc: { number_of_posts: 1 } }),
+            user_1.User.findByIdAndUpdate(authenticatedUser._id, { $inc: { number_of_posts: 1 } }),
             category_1.Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } })
         ]);
         return res.json(savedPost);
@@ -99,6 +100,10 @@ async function updatePost(req, res, next) {
         if (!originalPost || !category) {
             return res.json({ message: `Post with id ${req.params.id} does not exist.` });
         }
+        const authenticatedUser = res.locals.authenticatedUser;
+        if (authenticatedUser._id.toString() !== originalPost.user.toString()) {
+            return res.status(422).json({ message: 'You are not authorized to perform this action' });
+        }
         if (category._id !== originalPost.category) { //Updates number of posts for category
             await Promise.all([
                 category_1.Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } }),
@@ -110,6 +115,7 @@ async function updatePost(req, res, next) {
             description: req.body.description,
             price: req.body.price,
             category: category._id,
+            user: authenticatedUser._id.toString(),
         };
         const post = await post_1.Post.findByIdAndUpdate(req.params.id, {
             $set: postUpdateBody,
@@ -130,14 +136,18 @@ async function deletePost(req, res, next) {
         if (!post) {
             return res.json({ message: `Post with id ${req.params.id} does not exist.` });
         }
-        const [user, category] = await Promise.all([user_1.User.findById(post.user), category_1.Category.findById(post.category)]);
-        if (!user || !category) {
-            return res.json({ message: `User with id ${post.user} does not exist.` });
+        const authenticatedUser = res.locals.authenticatedUser;
+        if (authenticatedUser._id.toString() !== post.user.toString()) {
+            return res.status(422).json({ message: 'You are not authorized to perform this action' });
+        }
+        const category = await category_1.Category.findById(post.category);
+        if (!category) {
+            return res.status(404).json({ message: 'Category does not exist' });
         }
         // Delete post and update number of posts for user and category
         const [deletedPost] = await Promise.all([
             post_1.Post.findByIdAndDelete(req.params.id),
-            user_1.User.findByIdAndUpdate(user._id, { $inc: { number_of_posts: -1 } }),
+            user_1.User.findByIdAndUpdate(authenticatedUser._id, { $inc: { number_of_posts: -1 } }),
             category_1.Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: -1 } }),
             image_1.Image.deleteMany({ post: post._id }),
         ]);

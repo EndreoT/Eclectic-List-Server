@@ -19,7 +19,7 @@ router.post("/login", auth.login);
 router.route('/protected/:id')
   .get(auth.authorizeUser, (req, res) => {
     console.log('made it to protected route');
-    const authenticatedUser = res.locals.authenticatedUser;
+    const authenticatedUser: any = res.locals.authenticatedUser;
 
     if (authenticatedUser._id.toString() !== req.params.id) {
       return res.status(422).json({ message: 'You are not authorized to perform this action' });

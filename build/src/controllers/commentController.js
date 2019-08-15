@@ -48,6 +48,10 @@ exports.getCommentsForPost = getCommentsForPost;
 // Creates comment for a given post and user
 // TODO: NEED TO Handle HTML chars
 async function createComment(req, res, next) {
+    const authenticatedUser = res.locals.authenticatedUser;
+    if (authenticatedUser._id.toString() !== req.body.userId) {
+        return res.status(422).json({ message: 'You are not authorized to perform this action' });
+    }
     const { error } = validation.validateComment(req.body);
     if (error) {
         return res.status(400).json(error.details[0]);

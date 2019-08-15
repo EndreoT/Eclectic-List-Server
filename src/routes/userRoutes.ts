@@ -9,9 +9,9 @@ const router: express.Router = express.Router();
 
 router.get("/", userController.getAllUsers);
 
-router.get("/:user", userController.getUser);
+router.get("/:user", userController.getUserByUsername);
 
-router.get("/userById/:user", userController.getUserById);
+router.get("/userById/:userId", userController.getUserById);
 
 router.get("/fullUser/:userId", auth.authorizeUser, userController.getFullUser);
 

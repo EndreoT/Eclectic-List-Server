@@ -10,6 +10,10 @@ const validate = require("../validation/validation");
 const JWT_SECRET = process.env.JWT_SECRET;
 class Auth {
     constructor() {
+        this.initialize = () => {
+            passport.use('jwt', this.getStrategy());
+            return passport.initialize();
+        };
         /**
          * Calls Passport's authentication strategy
          */
@@ -34,6 +38,45 @@ class Auth {
                 expires: moment.unix(expires).format(),
                 user,
             };
+        };
+        this.validateJWT = (req, res, next) => {
+            return this.authenticate((err, user, info) => {
+                if (err) {
+                    return next(err);
+                }
+                if (!user) {
+                    if (info.name === 'TokenExpiredError') {
+                        return res.status(401).json({ message: 'Your token has expired. Please generate a new one' });
+                    }
+                    else {
+                        return res.status(401).json({ message: info.message });
+                    }
+                }
+                next();
+            })(req, res, next);
+        };
+        /**
+         * Validates that the user id in res.locals.userIdLocation is equal to the user id provided in their JWT
+         * @param {*} req
+         * @param {*} res
+         * @param {*} next
+         */
+        this.authorizeUser = (req, res, next) => {
+            return this.authenticate((err, user, info) => {
+                if (err) {
+                    return next(err);
+                }
+                if (!user) {
+                    if (info.name === 'TokenExpiredError') {
+                        return res.status(401).json({ message: 'Your token has expired. Please generate a new one' });
+                    }
+                    else {
+                        return res.status(401).json({ message: info.message });
+                    }
+                }
+                res.locals.authenticatedUser = user;
+                return next();
+            })(req, res, next);
         };
         /**
          *  Signup authentication
@@ -85,7 +128,7 @@ class Auth {
                 if (error) {
                     return res.status(400).json(error.details[0]);
                 }
-                const user = await user_1.User.findOne({ "username": req.body.username }).populate('avatar_image');
+                const user = await user_1.User.findOne({ "email": req.body.email }).populate('avatar_image');
                 if (!user)
                     throw new Error("User not found");
                 const success = await user.isValidPassword(req.body.password);
@@ -123,49 +166,6 @@ class Auth {
                 });
             });
         };
-    }
-    initialize() {
-        passport.use('jwt', this.getStrategy());
-        return passport.initialize();
-    }
-    validateJWT(req, res, next) {
-        return this.authenticate((err, user, info) => {
-            if (err) {
-                return next(err);
-            }
-            if (!user) {
-                if (info.name === 'TokenExpiredError') {
-                    return res.status(401).json({ message: 'Your token has expired. Please generate a new one' });
-                }
-                else {
-                    return res.status(401).json({ message: info.message });
-                }
-            }
-            next();
-        })(req, res, next);
-    }
-    /**
-     * Validates that the user id in res.locals.userIdLocation is equal to the user id provided in their JWT
-     * @param {*} req
-     * @param {*} res
-     * @param {*} next
-     */
-    authorizeUser(req, res, next) {
-        return this.authenticate((err, user, info) => {
-            if (err) {
-                return next(err);
-            }
-            if (!user) {
-                if (info.name === 'TokenExpiredError') {
-                    return res.status(401).json({ message: 'Your token has expired. Please generate a new one' });
-                }
-                else {
-                    return res.status(401).json({ message: info.message });
-                }
-            }
-            res.locals.authenticatedUser = user;
-            return next();
-        })(req, res, next);
     }
 }
 exports.auth = new Auth();

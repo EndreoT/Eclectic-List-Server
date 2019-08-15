@@ -12,7 +12,7 @@ async function getAllUsers(req, res, next) {
 }
 exports.getAllUsers = getAllUsers;
 // Get user by name
-async function getUser(req, res, next) {
+async function getUserByUsername(req, res, next) {
     try {
         const user = await user_1.User.findOne({ username: req.params.user }, "username number_of_posts avatar_image").populate("avatar_image");
         if (user)
@@ -23,10 +23,10 @@ async function getUser(req, res, next) {
         return next(error);
     }
 }
-exports.getUser = getUser;
+exports.getUserByUsername = getUserByUsername;
 async function getUserById(req, res, next) {
     try {
-        const user = await user_1.User.findById({ username: req.params.user }, "username number_of_posts avatar_image").populate("avatar_image");
+        const user = await user_1.User.findById(req.params.userId, "username email number_of_posts avatar_image").populate("avatar_image");
         if (user)
             return res.status(200).json(user);
         return res.status(404).json({ message: `User id '${req.params.user} does not exist.'` });
@@ -40,9 +40,6 @@ exports.getUserById = getUserById;
 async function getFullUser(req, res, next) {
     try {
         console.log('full user');
-        // if (req.user._id !== req.params.userId) { //req.user field is added to response by passport.js authentication
-        //   return res.status(401).send("Credentials do not match.");
-        // }
         const user = await user_1.User.findById(req.params.userId, "-password");
         if (user)
             return res.status(200).json(user);

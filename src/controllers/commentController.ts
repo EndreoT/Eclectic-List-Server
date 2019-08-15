@@ -45,14 +45,21 @@ export async function getCommentsForPost(req: Request, res: Response, next: Next
 // Creates comment for a given post and user
 // TODO: NEED TO Handle HTML chars
 export async function createComment(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+  const authenticatedUser: any = res.locals.authenticatedUser;
+
+  if (authenticatedUser._id.toString() !== req.body.userId) {
+    return res.status(422).json({ message: 'You are not authorized to perform this action' });
+  }
+
   const { error } = validation.validateComment(req.body);
   if (error) {
     return res.status(400).json(error.details[0]);
   }
+  
   try {
     const [user, post] = await Promise.all([User.findById(req.body.userId), Post.findById(req.body.postId)]);
     if (!user || !post) {
-      return res.json({message: `User with id ${req.body.userId} or Post with id ${req.body.postId} does not exist.`});
+      return res.json({ message: `User with id ${req.body.userId} or Post with id ${req.body.postId} does not exist.` });
     }
     const comment: IComment = new Comment(
       {
