@@ -8,18 +8,20 @@ import * as internalMiddleWare from '../../middleware/middleware';
 const router: express.Router = express.Router();
 
 
-router.get("/", postController.getAllPosts);
+router.route('/')
+  .get(postController.getAllPosts)
+  .post(internalMiddleWare.sanitizePost, auth.authorizeUser, postController.createPost);
 
-router.get("/:post", postController.getPost);
+router.route('/:postId')
+  .get(postController.getPostById)
+  .put(internalMiddleWare.sanitizePost, auth.authorizeUser, postController.updatePost)
+  .delete(auth.authorizeUser, postController.deletePost);
 
 router.get("/postsByCategory/:category", postController.getPostsByCategory);
 
 router.get("/postsByUser/:user", postController.getPostsByUser);
 
-router.post("/createPost", internalMiddleWare.sanitizePost, auth.authorizeUser, postController.createPost);
 
-router.put("/edit/:id", internalMiddleWare.sanitizePost, auth.authorizeUser, postController.updatePost);
 
-router.delete("/delete/:id", auth.authorizeUser, postController.deletePost);
 
 export const postRouter = router;

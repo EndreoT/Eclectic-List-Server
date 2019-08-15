@@ -12,12 +12,6 @@ const mongoose = require("mongoose");
 // Internal middleware
 const authController_1 = require("./controllers/authController");
 // Routes
-// import { authRouter } from "./routes/auth";
-// import { categoryRouter } from './routes/api/categoryRoutes';
-// import { commentRouter } from "./routes/api/commentRoutes";
-// import { imageRouter } from "./routes/api/imageRoutes";
-// import { postRouter } from "./routes/api/postRoutes";
-// import { userRouter } from "./routes/api/userRoutes";
 const routes_1 = require("./routes");
 class App {
     constructor() {
@@ -57,12 +51,6 @@ class App {
         this.app.use(authController_1.auth.initialize());
     }
     initRoutes() {
-        // this.app.use("/api/categories", categoryRouter);
-        // this.app.use("/api/comments", commentRouter);
-        // this.app.use("/api/posts", postRouter);
-        // this.app.use("/api/auth", authRouter);
-        // this.app.use('/api/images', imageRouter);
-        // this.app.use('/users', userRouter);
         this.app.use(routes_1.appRouter);
     }
     initExpressConnection() {

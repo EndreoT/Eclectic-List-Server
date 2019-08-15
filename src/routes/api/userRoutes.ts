@@ -1,18 +1,22 @@
 import * as express from "express";
 
-import {auth} from "../../controllers/authController";
+import { auth } from "../../controllers/authController";
 import * as userController from "../../controllers/userController";
 
 
 const router: express.Router = express.Router();
 
 
-router.get("/", userController.getAllUsers);
+router.route('/')
+  .get(userController.getAllUsers);
 
-router.get("/:user", userController.getUserByUsername);
+router.route('/:userId')
+  .get(userController.getUserById);
 
-router.get("/userById/:userId", userController.getUserById);
+router.route('/username/:userName')
+  .get(userController.getUserByUsername);
 
-router.get("/fullUser/:userId", auth.authorizeUser, userController.getFullUser);
+router.route("/fullUser/:userId")
+  .get(auth.authorizeUser, userController.getFullUser);
 
 export const userRouter = router;

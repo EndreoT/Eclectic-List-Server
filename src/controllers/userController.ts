@@ -38,7 +38,7 @@ export async function getUserById(req: Request, res: Response, next: NextFunctio
 // Retrieves all data about user except password
 export async function getFullUser(req: any, res: Response, next: NextFunction): Promise<Response | void> {
   try {
-    console.log('full user')
+    console.log('full user');
     const user: IUser | null = await User.findById(req.params.userId, "-password");
     if (user) return res.status(200).json(user);
     return res.status(404).json({ message: `User '${req.params.user} does not exist.'` });

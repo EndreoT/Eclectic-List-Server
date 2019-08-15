@@ -22,7 +22,7 @@ function chooseImageDir(imageDir) {
         cloudinary,
         folder: imageDir,
         allowedFormats: ["jpg", "png"],
-        transformation: [{ width: 500, height: 500, crop: "limit" }]
+        transformation: [{ width: 500, height: 500, crop: "limit" }],
     });
 }
 // Handle image uploads for avatar images and post images
@@ -55,13 +55,13 @@ function postImage(parser, folder) {
                 console.log("Error in saving image document", error);
             }
             return res.json();
-        }
+        },
     ];
 }
 // Image folders
 const folders = {
     avatarImageFolder: 'avatar',
-    postImageFolder: 'postImage'
+    postImageFolder: 'postImage',
 };
 const avatarImageParser = multer({ storage: chooseImageDir(folders.avatarImageFolder) });
 const postImageParser = multer({ storage: chooseImageDir(folders.postImageFolder) });
@@ -104,7 +104,7 @@ function postMultipleImagesHelper(parser, folder) {
                 }
             });
             return res.json(imageIds);
-        }
+        },
     ];
 }
 // Returns url string to access Cloudinary image using GET request

@@ -8,12 +8,14 @@ import * as internalMiddleware from '../../middleware/middleware';
 const router: express.Router = express.Router();
 
 
-router.get("/", commentController.getAllComments);
+router.route('/')
+  .get(commentController.getAllComments)
+  .post(internalMiddleware.sanitizeComment, auth.authorizeUser, commentController.createComment);
 
-router.get("/:commentId", commentController.getComment);
+router.route('/:commentId')
+  .get(commentController.getCommentById);
 
-router.post("/", internalMiddleware.sanitizeComment, auth.authorizeUser, commentController.createComment);
-
-router.get("/commentsForPost/:postId", commentController.getCommentsForPost);
+router.route('/commentsForPost/:postId')
+  .get(commentController.getCommentsForPost);
 
 export const commentRouter = router;

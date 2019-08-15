@@ -1,13 +1,11 @@
-import { sanitizeBody } from "express-validator/filter";
 import { Request, Response, NextFunction } from 'express';
 
 import { ICategory, Category } from "../models/category";
-import { IImage, Image } from '../models/image';
+import { Image } from '../models/image';
 import { IPost, Post } from "../models/post";
 import { IUser, User } from "../models/user";
 import * as validation from "../validation/validation";
 import { ValidationError } from "joi";
-import { auth } from "./authController";
 
 
 interface IPostBody {
@@ -28,17 +26,17 @@ export async function getAllPosts(req: Request, res: Response, next: NextFunctio
     return res.status(404).json({ message: `No posts exist.` });
     // return next(error);
   }
-};
+}
 
-export async function getPost(req: Request, res: Response, next: NextFunction): Promise<Response> {
+export async function getPostById(req: Request, res: Response, next: NextFunction): Promise<Response> {
   try {
-    const post: IPost | null = await Post.findById(req.params.post).populate("user", "username avatar_image").populate("category");
+    const post: IPost | null = await Post.findById(req.params.postId).populate("user", "username avatar_image").populate("category");
     return res.status(200).json(post);
   } catch (error) {
     return res.status(404).json({ message: `Post id '${req.params.post} does not exist.'` });
     // return next(error);
   }
-};
+}
 
 export async function getPostsByUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
@@ -51,7 +49,7 @@ export async function getPostsByUser(req: Request, res: Response, next: NextFunc
   } catch (error) {
     return next(error);
   }
-};
+}
 
 export async function getPostsByCategory(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
@@ -75,7 +73,7 @@ export async function createPost(req: Request, res: Response, next: NextFunction
 
   try {
     const category: ICategory | null = await Category.findOne({ category: req.body.category });
-    
+
     if (!category) {
       return res.json({ message: 'Category does not exist.' });
     }
@@ -93,7 +91,7 @@ export async function createPost(req: Request, res: Response, next: NextFunction
     await Promise.all(
       [
         User.findByIdAndUpdate(authenticatedUser._id, { $inc: { number_of_posts: 1 } }),
-        Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } })
+        Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } }),
       ]
     );
     return res.json(savedPost);
@@ -108,11 +106,12 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
     return res.status(400).json(error.details[0]);
   }
   try {
+    const postId: string = req.params.postId;
     const [category, originalPost] = await Promise.all(
-      [Category.findOne({ category: req.body.category }), Post.findById(req.params.id)]
+      [Category.findOne({ category: req.body.category }), Post.findById(postId)]
     );
     if (!originalPost || !category) {
-      return res.json({ message: `Post with id ${req.params.id} does not exist.` });
+      return res.json({ message: `Post with id ${postId} does not exist.` });
     }
 
     const authenticatedUser: any = res.locals.authenticatedUser;
@@ -134,7 +133,7 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
       category: category._id,
       user: authenticatedUser._id.toString(),
     };
-    const post = await Post.findByIdAndUpdate(req.params.id,
+    const post = await Post.findByIdAndUpdate(postId,
       {
         $set: postUpdateBody,
       },
@@ -152,10 +151,11 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
 
 export async function deletePost(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
-    const post: IPost | null = await Post.findById(req.params.id);
+    const postId: string = req.params.postId;
+    const post: IPost | null = await Post.findById(postId);
 
     if (!post) {
-      return res.json({ message: `Post with id ${req.params.id} does not exist.` });
+      return res.json({ message: `Post with id ${postId} does not exist.` });
     }
 
     const authenticatedUser: any = res.locals.authenticatedUser;
@@ -173,7 +173,7 @@ export async function deletePost(req: Request, res: Response, next: NextFunction
     // Delete post and update number of posts for user and category
     const [deletedPost] = await Promise.all(
       [
-        Post.findByIdAndDelete(req.params.id),
+        Post.findByIdAndDelete(postId),
         User.findByIdAndUpdate(authenticatedUser._id, { $inc: { number_of_posts: -1 } }),
         Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: -1 } }),
         Image.deleteMany({ post: post._id }),
@@ -181,6 +181,6 @@ export async function deletePost(req: Request, res: Response, next: NextFunction
     );
     return res.send(deletedPost);
   } catch (error) {
-    return res.status(404).json({ message: `Post id '${req.params.id} does not exist.'` });
+    return res.status(404).json({ message: `Post id '${req.params.postId} does not exist.'` });
   }
 }

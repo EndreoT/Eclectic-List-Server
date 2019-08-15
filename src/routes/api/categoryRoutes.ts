@@ -6,8 +6,10 @@ import * as categoryController from '../../controllers/categoryController';
 const router: express.Router = express.Router();
 
 
-router.get("/", categoryController.getAllCategories);
+router.route('/')
+  .get(categoryController.getAllCategories);
 
-router.get("/:category", categoryController.getCategory);
+router.route('/:categoryId')
+  .get(categoryController.getCategory);
 
 export const categoryRouter = router;
