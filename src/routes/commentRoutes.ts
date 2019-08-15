@@ -12,7 +12,7 @@ router.get("/", commentController.getAllComments);
 
 router.get("/:commentId", commentController.getComment);
 
-router.post("/", internalMiddleware.sanitizeComment, auth.authorizeUserBody, commentController.createComment);
+router.post("/", internalMiddleware.sanitizeComment, auth.authorizeUser, commentController.createComment);
 
 router.get("/commentsForPost/:postId", commentController.getCommentsForPost);
 

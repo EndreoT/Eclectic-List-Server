@@ -13,6 +13,6 @@ router.get("/:user", userController.getUser);
 
 router.get("/userById/:user", userController.getUserById);
 
-router.get("/fullUser/:userId", auth.authorizeUserParams, userController.getFullUser);
+router.get("/fullUser/:userId", auth.authorizeUser, userController.getFullUser);
 
 export const userRouter = router;

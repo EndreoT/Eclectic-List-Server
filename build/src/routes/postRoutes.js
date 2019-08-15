@@ -9,8 +9,8 @@ router.get("/", postController.getAllPosts);
 router.get("/:post", postController.getPost);
 router.get("/postsByCategory/:category", postController.getPostsByCategory);
 router.get("/postsByUser/:user", postController.getPostsByUser);
-router.post("/createPost", authController_1.auth.authorizeUserBody, internalMiddleWare.sanitizePost, postController.createPost);
-router.put("/edit/:id", authController_1.auth.authorizeUserBody, internalMiddleWare.sanitizePost, postController.updatePost);
-router.delete("/delete/:id", authController_1.auth.authorizeUserBody, postController.deletePost);
+router.post("/createPost", authController_1.auth.authorizeUser, internalMiddleWare.sanitizePost, postController.createPost);
+router.put("/edit/:id", authController_1.auth.authorizeUser, internalMiddleWare.sanitizePost, postController.updatePost);
+router.delete("/delete/:id", authController_1.auth.authorizeUser, postController.deletePost);
 exports.postRouter = router;
 //# sourceMappingURL=postRoutes.js.map
