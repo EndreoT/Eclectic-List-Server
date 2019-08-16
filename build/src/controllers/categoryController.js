@@ -13,12 +13,12 @@ async function getAllCategories(req, res, next) {
 exports.getAllCategories = getAllCategories;
 async function getCategory(req, res, next) {
     try {
-        const categoryParam = req.params.category;
+        const categoryParam = req.params.categoryId;
         const category = await category_1.Category.findOne({ category: categoryParam });
         if (category) {
             return res.send(category);
         }
-        return res.status(404).json({ message: `Category '${req.params.category}' does not exist.` });
+        return res.status(404).json({ message: `Category '${categoryParam}' does not exist.` });
     }
     catch (error) {
         return next(error);

@@ -1,8 +1,7 @@
-import { sanitizeBody } from "express-validator/filter";
 import { Request, Response, NextFunction } from 'express';
 
 import { ICategory, Category } from "../models/category";
-import { IImage, Image } from '../models/image';
+import { Image } from '../models/image';
 import { IPost, Post } from "../models/post";
 import { IUser, User } from "../models/user";
 import * as validation from "../validation/validation";
@@ -27,17 +26,17 @@ export async function getAllPosts(req: Request, res: Response, next: NextFunctio
     return res.status(404).json({ message: `No posts exist.` });
     // return next(error);
   }
-};
+}
 
-export async function getPost(req: Request, res: Response, next: NextFunction): Promise<Response> {
+export async function getPostById(req: Request, res: Response, next: NextFunction): Promise<Response> {
   try {
-    const post: IPost | null = await Post.findById(req.params.post).populate("user", "username avatar_image").populate("category");
+    const post: IPost | null = await Post.findById(req.params.postId).populate("user", "username avatar_image").populate("category");
     return res.status(200).json(post);
   } catch (error) {
     return res.status(404).json({ message: `Post id '${req.params.post} does not exist.'` });
     // return next(error);
   }
-};
+}
 
 export async function getPostsByUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
@@ -50,7 +49,7 @@ export async function getPostsByUser(req: Request, res: Response, next: NextFunc
   } catch (error) {
     return next(error);
   }
-};
+}
 
 export async function getPostsByCategory(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
@@ -71,26 +70,28 @@ export async function createPost(req: Request, res: Response, next: NextFunction
   if (error) {
     return res.status(400).json(error.details[0]);
   }
+
   try {
-    const [user, category] = await Promise.all(
-      [User.findById(req.body.userId), Category.findOne({ category: req.body.category })]
-    );
-    if (!user || !category) {
-      return res.json({ message: `User with id ${req.body.userId} does not exist.` });
+    const category: ICategory | null = await Category.findOne({ category: req.body.category });
+
+    if (!category) {
+      return res.json({ message: 'Category does not exist.' });
     }
+
+    const authenticatedUser: any = res.locals.authenticatedUser;
     const postCreateBody: IPostBody = {
       subject: req.body.subject,
       description: req.body.description,
       price: req.body.price,
       category: category._id,
-      user: user._id,
+      user: authenticatedUser._id,
     };
     const post: IPost = new Post(postCreateBody);
     const savedPost: IPost = await post.save();
     await Promise.all(
       [
-        User.findByIdAndUpdate(user._id, { $inc: { number_of_posts: 1 } }),
-        Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } })
+        User.findByIdAndUpdate(authenticatedUser._id, { $inc: { number_of_posts: 1 } }),
+        Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } }),
       ]
     );
     return res.json(savedPost);
@@ -105,12 +106,20 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
     return res.status(400).json(error.details[0]);
   }
   try {
+    const postId: string = req.params.postId;
     const [category, originalPost] = await Promise.all(
-      [Category.findOne({ category: req.body.category }), Post.findById(req.params.id)]
+      [Category.findOne({ category: req.body.category }), Post.findById(postId)]
     );
     if (!originalPost || !category) {
-      return res.json({ message: `Post with id ${req.params.id} does not exist.` });
+      return res.json({ message: `Post with id ${postId} does not exist.` });
     }
+
+    const authenticatedUser: any = res.locals.authenticatedUser;
+
+    if (authenticatedUser._id.toString() !== originalPost.user.toString()) {
+      return res.status(422).json({ message: 'You are not authorized to perform this action' });
+    }
+
     if (category._id !== originalPost.category) { //Updates number of posts for category
       await Promise.all([
         Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: 1 } }),
@@ -122,8 +131,9 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
       description: req.body.description,
       price: req.body.price,
       category: category._id,
-    }
-    const post = await Post.findByIdAndUpdate(req.params.id,
+      user: authenticatedUser._id.toString(),
+    };
+    const post = await Post.findByIdAndUpdate(postId,
       {
         $set: postUpdateBody,
       },
@@ -141,27 +151,36 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
 
 export async function deletePost(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
-    const post: IPost | null = await Post.findById(req.params.id);
+    const postId: string = req.params.postId;
+    const post: IPost | null = await Post.findById(postId);
+
     if (!post) {
-      return res.json({ message: `Post with id ${req.params.id} does not exist.` });
+      return res.json({ message: `Post with id ${postId} does not exist.` });
     }
-    const [user, category] = await Promise.all(
-      [User.findById(post.user), Category.findById(post.category)]
-    );
-    if (!user || !category) {
-      return res.json({ message: `User with id ${post.user} does not exist.` });
+
+    const authenticatedUser: any = res.locals.authenticatedUser;
+
+    if (authenticatedUser._id.toString() !== post.user.toString()) {
+      return res.status(422).json({ message: 'You are not authorized to perform this action' });
     }
+
+    const category: ICategory | null = await Category.findById(post.category);
+
+    if (!category) {
+      return res.status(404).json({ message: 'Category does not exist' });
+    }
+
     // Delete post and update number of posts for user and category
     const [deletedPost] = await Promise.all(
       [
-        Post.findByIdAndDelete(req.params.id),
-        User.findByIdAndUpdate(user._id, { $inc: { number_of_posts: -1 } }),
+        Post.findByIdAndDelete(postId),
+        User.findByIdAndUpdate(authenticatedUser._id, { $inc: { number_of_posts: -1 } }),
         Category.findByIdAndUpdate(category._id, { $inc: { number_of_posts: -1 } }),
         Image.deleteMany({ post: post._id }),
       ]
     );
     return res.send(deletedPost);
   } catch (error) {
-    return res.status(404).json({ message: `Post id '${req.params.id} does not exist.'` });
+    return res.status(404).json({ message: `Post id '${req.params.postId} does not exist.'` });
   }
 }

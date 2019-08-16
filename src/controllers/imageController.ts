@@ -26,8 +26,8 @@ function chooseImageDir(imageDir: string) {
         cloudinary,
         folder: imageDir,
         allowedFormats: ["jpg", "png"],
-        transformation: [{ width: 500, height: 500, crop: "limit" }]
-    })
+        transformation: [{ width: 500, height: 500, crop: "limit" }],
+    });
 }
 
 // Handle image uploads for avatar images and post images
@@ -59,15 +59,15 @@ function postImage(parser: multer.Instance, folder: string) {
                 console.log("Error in saving image document", error);
             }
             return res.json();
-        }
+        },
     ];
 }
 
 // Image folders
 const folders = {
     avatarImageFolder: 'avatar',
-    postImageFolder: 'postImage'
-}
+    postImageFolder: 'postImage',
+};
 
 const avatarImageParser = multer({ storage: chooseImageDir(folders.avatarImageFolder) });
 const postImageParser = multer({ storage: chooseImageDir(folders.postImageFolder) });
@@ -87,7 +87,7 @@ function postMultipleImagesHelper(parser: multer.Instance, folder: string) {
             parser.array("file", 10)(req, res, function (err) {
                 if (err ) {
                     // A Multer error occurred when uploading.
-                    console.log('multerError', err)
+                    console.log('multerError', err);
                 } else {
                     next();
                 }
@@ -113,7 +113,7 @@ function postMultipleImagesHelper(parser: multer.Instance, folder: string) {
                 }
             });
             return res.json(imageIds);
-        }
+        },
     ];
 }
 
@@ -126,7 +126,7 @@ export const getImageById = async (req: Request, res: Response, next: NextFuncti
         return res.status(404).json({ message: `Avatar image id '${req.params.imageId}' does not exist` });
         // return next(error)
     }
-}
+};
 
 export async function getAllImages (req: Request, res: Response, next: NextFunction) {
     try {
@@ -165,7 +165,7 @@ export async function setUserAvatarImage (req: Request, res: Response, next: Nex
             { $set: { avatar_image: avatarImage._id } },
             { 'fields': "username number_of_posts avatar_image", 'new': true })
             .populate("avatar_image");
-        console.log(user)
+        console.log(user);
         return res.json({ image: avatarImage, user });
     } catch (error) {
         return res.status(404).json({ message: `Error in setting user avatar image` });

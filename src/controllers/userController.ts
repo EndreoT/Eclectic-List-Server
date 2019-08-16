@@ -15,11 +15,12 @@ export async function getAllUsers(req: Request, res: Response, next: NextFunctio
 }
 
 // Get user by name
-export async function getUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+export async function getUserByUsername(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
-    const user: IUser | null = await User.findOne({ username: req.params.user }, "username number_of_posts avatar_image").populate("avatar_image");
+    const username = req.params.username;
+    const user: IUser | null = await User.findOne({ username }, "username number_of_posts avatar_image").populate("avatar_image");
     if (user) return res.status(200).json(user);
-    return res.status(404).json({ message: `User '${req.params.user} does not exist.'` });
+    return res.status(404).json({ message: `User '${username} does not exist.'` });
   } catch (error) {
     return next(error);
   }
@@ -27,7 +28,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction): 
 
 export async function getUserById(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
-    const user: IUser | null = await User.findById({ username: req.params.user }, "username number_of_posts avatar_image").populate("avatar_image");
+    const user: IUser | null = await User.findById(req.params.userId, "username email number_of_posts avatar_image").populate("avatar_image");
     if (user) return res.status(200).json(user);
     return res.status(404).json({ message: `User id '${req.params.user} does not exist.'` });
   } catch (error) {
@@ -38,10 +39,7 @@ export async function getUserById(req: Request, res: Response, next: NextFunctio
 // Retrieves all data about user except password
 export async function getFullUser(req: any, res: Response, next: NextFunction): Promise<Response | void> {
   try {
-    console.log('full user')
-    // if (req.user._id !== req.params.userId) { //req.user field is added to response by passport.js authentication
-    //   return res.status(401).send("Credentials do not match.");
-    // }
+    console.log('full user');
     const user: IUser | null = await User.findById(req.params.userId, "-password");
     if (user) return res.status(200).json(user);
     return res.status(404).json({ message: `User '${req.params.user} does not exist.'` });

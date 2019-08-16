@@ -1,6 +1,6 @@
 const categories: Set<string> = new Set(
     [
-        "antiques", "appliances", "cars", "furniture", "tools", "boats"
+        "antiques", "appliances", "cars", "furniture", "tools", "boats",
     ]
 );
 

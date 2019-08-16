@@ -10,7 +10,6 @@ function validatePost(post) {
         description: Joi.string().min(postConstants_1.postModelConstants.descriptionMin).max(postConstants_1.postModelConstants.descriptionMax).required(),
         price: Joi.number().min(0).precision(2).required(),
         category: Joi.string().required(),
-        userId: Joi.string().required(),
     };
     return Joi.validate(post, schema);
 }
@@ -28,7 +27,7 @@ exports.validateCreateUser = validateCreateUser;
 // Validate on login
 function validateAuthenticateUser(user) {
     const schema = {
-        username: Joi.string().min(1).max(50).required(),
+        email: Joi.string().min(1).max(50).required(),
         password: Joi.string().min(5).max(255).required(),
     };
     return Joi.validate(user, schema);
@@ -39,7 +38,6 @@ function validateComment(comment) {
     const schema = {
         comment: Joi.string().min(postConstants_1.postModelConstants.subjectMin).max(postConstants_1.postModelConstants.subjectMax).required(),
         postId: Joi.string().required(),
-        userId: Joi.string().required(),
     };
     return Joi.validate(comment, schema);
 }

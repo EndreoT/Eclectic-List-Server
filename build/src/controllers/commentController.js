@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const comment_1 = require("../models/comment");
 const post_1 = require("../models/post");
-const user_1 = require("../models/user");
 const validation = require("../validation/validation");
 async function getAllComments(req, res, next) {
     try {
@@ -17,7 +16,7 @@ async function getAllComments(req, res, next) {
 }
 exports.getAllComments = getAllComments;
 // Get comment by id
-async function getComment(req, res, next) {
+async function getCommentById(req, res, next) {
     try {
         const comment = await comment_1.Comment.findById(req.params.commentId);
         return res.json(comment);
@@ -27,8 +26,7 @@ async function getComment(req, res, next) {
         // return next(error); 
     }
 }
-exports.getComment = getComment;
-;
+exports.getCommentById = getCommentById;
 // Get all comments for post id
 async function getCommentsForPost(req, res, next) {
     try {
@@ -48,19 +46,20 @@ exports.getCommentsForPost = getCommentsForPost;
 // Creates comment for a given post and user
 // TODO: NEED TO Handle HTML chars
 async function createComment(req, res, next) {
+    const authenticatedUser = res.locals.authenticatedUser;
     const { error } = validation.validateComment(req.body);
     if (error) {
         return res.status(400).json(error.details[0]);
     }
     try {
-        const [user, post] = await Promise.all([user_1.User.findById(req.body.userId), post_1.Post.findById(req.body.postId)]);
-        if (!user || !post) {
-            return res.json({ message: `User with id ${req.body.userId} or Post with id ${req.body.postId} does not exist.` });
+        const post = await post_1.Post.findById(req.body.postId);
+        if (!post) {
+            return res.json({ message: `Post with id ${req.body.postId} does not exist.` });
         }
         const comment = new comment_1.Comment({
             comment: req.body.comment,
             post: post._id,
-            user: user._id,
+            user: authenticatedUser._id,
         });
         const savedComment = await comment.save();
         // Update number of comments for post and return new comment

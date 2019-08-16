@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 import { IComment, Comment } from "../models/comment";
-import { Post } from "../models/post";
-import { User } from "../models/user";
+import { IPost, Post } from "../models/post";
 import * as validation from "../validation/validation";
 
 
@@ -17,15 +16,15 @@ export async function getAllComments(req: Request, res: Response, next: NextFunc
 }
 
 // Get comment by id
-export async function getComment(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+export async function getCommentById(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
   try {
     const comment: IComment | null = await Comment.findById(req.params.commentId);
     return res.json(comment);
   } catch (error) {
-    return res.status(404).json({ message: `Comment id '${req.params.commentId}' does not exist` })
+    return res.status(404).json({ message: `Comment id '${req.params.commentId}' does not exist` });
     // return next(error); 
   }
-};
+}
 
 // Get all comments for post id
 export async function getCommentsForPost(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
@@ -36,7 +35,7 @@ export async function getCommentsForPost(req: Request, res: Response, next: Next
     return res.send(comments);
   } catch (error) {
     if (error.name === "CastError") {
-      return res.status(404).json({ message: `Post '${req.params.postId}' does not exist.` })
+      return res.status(404).json({ message: `Post '${req.params.postId}' does not exist.` });
     }
     return next(error);
   }
@@ -45,20 +44,23 @@ export async function getCommentsForPost(req: Request, res: Response, next: Next
 // Creates comment for a given post and user
 // TODO: NEED TO Handle HTML chars
 export async function createComment(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+  const authenticatedUser: any = res.locals.authenticatedUser;
+
   const { error } = validation.validateComment(req.body);
   if (error) {
     return res.status(400).json(error.details[0]);
   }
+
   try {
-    const [user, post] = await Promise.all([User.findById(req.body.userId), Post.findById(req.body.postId)]);
-    if (!user || !post) {
-      return res.json({message: `User with id ${req.body.userId} or Post with id ${req.body.postId} does not exist.`});
+    const post: IPost | null = await Post.findById(req.body.postId);
+    if (!post) {
+      return res.json({ message: `Post with id ${req.body.postId} does not exist.` });
     }
     const comment: IComment = new Comment(
       {
         comment: req.body.comment,
         post: post._id,
-        user: user._id,
+        user: authenticatedUser._id,
       }
     );
     const savedComment: IComment = await comment.save();

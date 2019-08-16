@@ -13,12 +13,12 @@ export async function getAllCategories(req: express.Request, res: express.Respon
 
 export async function getCategory(req: express.Request, res: express.Response, next: express.NextFunction) {
     try {
-        const categoryParam: string = req.params.category;
+        const categoryParam: string = req.params.categoryId;
         const category: ICategory | null = await Category.findOne({ category: categoryParam });
         if (category) { 
             return res.send(category);
         }
-        return res.status(404).json({ message: `Category '${req.params.category}' does not exist.` });
+        return res.status(404).json({ message: `Category '${categoryParam}' does not exist.` });
     } catch (error) {
         return next(error);
     }
