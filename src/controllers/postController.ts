@@ -8,14 +8,14 @@ import * as validation from "../validation/validation";
 import { ValidationError } from "joi";
 
 
-interface IPostBody {
-  subject: string;
-  description: string;
-  price: number;
-  category: string;
-  userId?: string;
-  user?: string;
-}
+// interface IPostBody {
+//   subject: string;
+//   description: string;
+//   price: number;
+//   category: string;
+//   userId?: string;
+//   user?: string;
+// }
 
 
 export async function getAllPosts(req: Request, res: Response, next: NextFunction): Promise<Response> {
@@ -77,9 +77,10 @@ export async function createPost(req: Request, res: Response, next: NextFunction
     if (!category) {
       return res.json({ message: 'Category does not exist.' });
     }
+    const categoryId: string = category._id;
 
     const authenticatedUser: any = res.locals.authenticatedUser;
-    const postCreateBody: IPostBody = {
+    const postCreateBody = {
       subject: req.body.subject,
       description: req.body.description,
       price: req.body.price,
@@ -126,7 +127,7 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
         Category.findByIdAndUpdate(originalPost.category, { $inc: { number_of_posts: -1 } }),
       ]);
     }
-    const postUpdateBody: IPostBody = {
+    const postUpdateBody = {
       subject: req.body.subject,
       description: req.body.description,
       price: req.body.price,

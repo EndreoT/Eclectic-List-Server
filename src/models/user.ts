@@ -1,5 +1,4 @@
 import * as bcrypt from "bcrypt";
-import * as jwt from "jsonwebtoken";
 import {Schema, Document, Types, Model, model, HookNextFunction} from 'mongoose';
 
 
@@ -75,24 +74,5 @@ userSchema.methods.isValidPassword = async function (password: string): Promise<
         return error;
     }
 };
-
-
-// interface IAuthTokenUserData {
-//     _id: string;
-//     username: string;
-//     email: string;
-// }
-
-// userSchema.statics.generateAuthToken = function (userData: IAuthTokenUserData): string {
-
-//     //We don't want to store the sensitive information such as the
-//     //user password in the token so we pick only the email and id
-//     const body: IAuthTokenUserData = { _id: userData._id, username: userData.username, email: userData.email };
-//     //Sign the JWT token and populate the payload with the user email and id
-//     const token = jwt.sign({ user: body }, secret,
-//         //  {expiresIn: "1h"}                      <- Change for production??
-//     );
-//     return token;
-// };
 
 export const User: Model<IUser> = model<IUser>("User", userSchema);

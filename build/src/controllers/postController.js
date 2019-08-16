@@ -5,6 +5,14 @@ const image_1 = require("../models/image");
 const post_1 = require("../models/post");
 const user_1 = require("../models/user");
 const validation = require("../validation/validation");
+// interface IPostBody {
+//   subject: string;
+//   description: string;
+//   price: number;
+//   category: string;
+//   userId?: string;
+//   user?: string;
+// }
 async function getAllPosts(req, res, next) {
     try {
         const posts = await post_1.Post.find().sort('-createdAt').populate("user", "username").populate("category");
@@ -66,6 +74,7 @@ async function createPost(req, res, next) {
         if (!category) {
             return res.json({ message: 'Category does not exist.' });
         }
+        const categoryId = category._id;
         const authenticatedUser = res.locals.authenticatedUser;
         const postCreateBody = {
             subject: req.body.subject,
