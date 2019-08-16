@@ -13,7 +13,7 @@ router.route('/')
 router.route('/:userId')
   .get(userController.getUserById);
 
-router.route('/username/:userName')
+router.route('/username/:username')
   .get(userController.getUserByUsername);
 
 router.route("/fullUser/:userId")

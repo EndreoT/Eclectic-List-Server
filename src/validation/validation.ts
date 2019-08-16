@@ -15,7 +15,6 @@ export function validatePost(post: IPost): Joi.ValidationResult<IPost> {
         description: Joi.string().min(postModelConstants.descriptionMin).max(postModelConstants.descriptionMax).required(),
         price: Joi.number().min(0).precision(2).required(),
         category: Joi.string().required(),
-        // userId: Joi.string().required(),
     };
     return Joi.validate(post, schema);
 }
@@ -44,7 +43,6 @@ export function validateComment(comment: IComment): Joi.ValidationResult<ICommen
     const schema = {
         comment: Joi.string().min(postModelConstants.subjectMin).max(postModelConstants.subjectMax).required(),
         postId: Joi.string().required(),
-        userId: Joi.string().required(),
     };
     return Joi.validate(comment, schema);
 }

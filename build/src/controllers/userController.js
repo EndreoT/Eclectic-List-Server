@@ -14,10 +14,11 @@ exports.getAllUsers = getAllUsers;
 // Get user by name
 async function getUserByUsername(req, res, next) {
     try {
-        const user = await user_1.User.findOne({ username: req.params.user }, "username number_of_posts avatar_image").populate("avatar_image");
+        const username = req.params.username;
+        const user = await user_1.User.findOne({ username }, "username number_of_posts avatar_image").populate("avatar_image");
         if (user)
             return res.status(200).json(user);
-        return res.status(404).json({ message: `User '${req.params.user} does not exist.'` });
+        return res.status(404).json({ message: `User '${username} does not exist.'` });
     }
     catch (error) {
         return next(error);

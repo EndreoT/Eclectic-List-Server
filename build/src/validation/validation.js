@@ -38,7 +38,6 @@ function validateComment(comment) {
     const schema = {
         comment: Joi.string().min(postConstants_1.postModelConstants.subjectMin).max(postConstants_1.postModelConstants.subjectMax).required(),
         postId: Joi.string().required(),
-        userId: Joi.string().required(),
     };
     return Joi.validate(comment, schema);
 }
