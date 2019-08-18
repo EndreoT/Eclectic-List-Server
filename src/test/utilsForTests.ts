@@ -2,11 +2,11 @@
 import {db} from '../models';
 
 export const utils = {
-  // event: {
-  //   title: 'Test title',
-  //   description: 'Test Description',
-  //   creator: '',
-  // },
+  post: {
+    title: 'Test title',
+    description: 'Test Description',
+    creator: '',
+  },
 
   user: {
     username: 'testuser',
@@ -19,17 +19,6 @@ export const utils = {
     await db.Post.remove({});
     await db.Comment.remove({});
   },
-
-  // seedUsers: async (usersSeed) => {
-  //   await asyncForEach(usersSeed, async (item, index) => {
-  //     console.log(index);
-  //     try {
-  //       await User.create(item);
-  //     } catch (err) {
-  //       console.log(err);
-  //     }
-  //   });
-  // },
 };
 
 

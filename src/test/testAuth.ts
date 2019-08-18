@@ -1,26 +1,17 @@
-// During the test the env variable is set to test
-process.env.NODE_ENV = 'test';
-
 //Require the dev-dependencies
 import { expect } from 'chai';
 import * as request from 'supertest';
 import { } from 'mocha';
 
-import Application from '../app';
-import { db } from '../models';
 import { utils } from './utilsForTests';
+import { expressServer } from './init';;
 
-const application = new Application();
-application.initExpressConnection();
-const expressServer = application.getExpressServer();
 
 //Our parent block
 describe('Authentication', () => {
 
-  beforeEach(async () => { // Before each test we empty the database
-    // Seed DB with users
+  beforeEach(async () => { // Before each test we empty the databaseP
     await utils.dropAllCollections();
-    await db.Image.create({ path: '1234', public_id: '1234', folder: 'avatar', caption: 'default' })
   });
 
   after(async () => {
@@ -30,14 +21,14 @@ describe('Authentication', () => {
   describe('POST /auth/signup', () => {
 
     it('should return user and token when the all request body is valid', async () => {
-      const res = await request(expressServer)
+      const newUserRes = await request(expressServer)
         .post('/auth/signup')
         .send(utils.user);
-      expect(res.status).to.equal(200);
-      const user = res.body.user;
+      expect(newUserRes.status).to.equal(200);
+      const user = newUserRes.body.user;
       expect(user).to.have.property('email', utils.user.email);
       expect(user).to.have.property('username', utils.user.username);
-      expect(res.body).to.have.property('token');
+      expect(newUserRes.body).to.have.property('token');
     });
 
   });

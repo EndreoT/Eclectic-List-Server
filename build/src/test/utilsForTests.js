@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // const asyncForEach = require('../scripts/utils').asyncForEach;
 const models_1 = require("../models");
 exports.utils = {
-    // event: {
-    //   title: 'Test title',
-    //   description: 'Test Description',
-    //   creator: '',
-    // },
+    post: {
+        title: 'Test title',
+        description: 'Test Description',
+        creator: '',
+    },
     user: {
         username: 'testuser',
         password: '12345',
