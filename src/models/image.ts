@@ -37,7 +37,7 @@ const imageSchema: Schema = new Schema(
         },
         post: {
             type: Types.ObjectId,
-            required: true,
+            required: false,
             ref: 'Post',
         },
         src_attribution: {

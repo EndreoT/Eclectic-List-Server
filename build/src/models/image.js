@@ -26,7 +26,7 @@ const imageSchema = new mongoose_1.Schema({
     },
     post: {
         type: mongoose_1.Types.ObjectId,
-        required: true,
+        required: false,
         ref: 'Post',
     },
     src_attribution: {

@@ -4,7 +4,6 @@
   "description": "Eclectic-List",
   "main": "build/src/index.js",
   "scripts": {
-    "test": "mocha build/src/test",
     "watch": "nodemon build/src/index.js",
     "start": "node build/src/index.js",
     "check": "gts check",
@@ -13,11 +12,13 @@
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run check"
+    "posttest(should be posttest)": "npm run check",
+    "test": "mocha build/src/test --timeout 20000 --exit"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/supertest": "^2.0.8",
     "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
     "cloudinary": "^1.14.0",
@@ -61,6 +62,7 @@
     "mocha": "^6.2.0",
     "nodemon": "^1.19.1",
     "sriracha": "^1.0.0",
+    "supertest": "^4.0.2",
     "typescript": "~3.4.0"
   }
 }
