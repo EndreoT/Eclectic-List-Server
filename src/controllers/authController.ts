@@ -115,9 +115,9 @@ class Auth {
                 ]
             );
             if (result[0] || result[1]) {
-                return res.json({ message: "Username or email already exists." });
+                return res.status(401).json({ message: "Username or email already exists." });
             } else if (!result[2]) {
-                return res.json({ message: "Cannot save. No default avatar image exists" });
+                return res.status(401).json({ message: "Cannot save. No default avatar image exists" });
             } else {
                 // Success. Create new user
                 const user = new User({
@@ -132,7 +132,7 @@ class Auth {
                     const authSuccess: IauthSuccessObj = this.genToken(populatedUser);
                     return res.json(authSuccess);
                 }
-                throw new Error(`User with id ${savedUser._id} does not exist`);
+                return res.status(401).json({ "message": `User with id ${savedUser._id} does not exist` });
             }
         } catch (error) {
             return res.json(error);
@@ -146,12 +146,15 @@ class Auth {
                 return res.status(400).json(error.details[0]);
             }
 
-            const user: IUser | null = await User.findOne({ "email": req.body.email }).populate('avatar_image');
+            const user: IUser | null = await User.findOne({ "email": req.body.email })
+                .select('username email avatar_image password').populate('avatar_image');
 
-            if (!user) throw new Error("User not found");
+            if (!user) return res.status(401).json({ "message": "User not found" });
 
             const success: boolean = await user.isValidPassword(req.body.password);
-            if (!success) throw new Error("Invalid password");
+            // Remove password
+            user.password = '';
+            if (!success) return res.status(401).json({ "message": "Invalid password" });
 
             const authSuccess: IauthSuccessObj = this.genToken(user);
             return res.status(200).json(authSuccess);

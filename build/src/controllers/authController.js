@@ -96,10 +96,10 @@ class Auth {
                     image_1.Image.find({ caption: 'default' }),
                 ]);
                 if (result[0] || result[1]) {
-                    return res.json({ message: "Username or email already exists." });
+                    return res.status(401).json({ message: "Username or email already exists." });
                 }
                 else if (!result[2]) {
-                    return res.json({ message: "Cannot save. No default avatar image exists" });
+                    return res.status(401).json({ message: "Cannot save. No default avatar image exists" });
                 }
                 else {
                     // Success. Create new user
@@ -115,7 +115,7 @@ class Auth {
                         const authSuccess = this.genToken(populatedUser);
                         return res.json(authSuccess);
                     }
-                    throw new Error(`User with id ${savedUser._id} does not exist`);
+                    return res.status(401).json({ "message": `User with id ${savedUser._id} does not exist` });
                 }
             }
             catch (error) {
@@ -128,12 +128,15 @@ class Auth {
                 if (error) {
                     return res.status(400).json(error.details[0]);
                 }
-                const user = await user_1.User.findOne({ "email": req.body.email }).populate('avatar_image');
+                const user = await user_1.User.findOne({ "email": req.body.email })
+                    .select('username email avatar_image password').populate('avatar_image');
                 if (!user)
-                    throw new Error("User not found");
+                    return res.status(401).json({ "message": "User not found" });
                 const success = await user.isValidPassword(req.body.password);
+                // Remove password
+                user.password = '';
                 if (!success)
-                    throw new Error("Invalid password");
+                    return res.status(401).json({ "message": "Invalid password" });
                 const authSuccess = this.genToken(user);
                 return res.status(200).json(authSuccess);
             }
