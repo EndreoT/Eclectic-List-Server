@@ -21,16 +21,16 @@ describe('Authentication', () => {
   describe('POST /auth/signup', () => {
 
     it('should return user and token when the all request body is valid', async () => {
-      const newUserRes = await request(expressServer)
+      const userRes = await request(expressServer)
         .post('/auth/signup')
         .send(utils.user);
-      expect(newUserRes.status).to.equal(200);
-      const user = newUserRes.body.user;
+
+      const user = userRes.body.user;
+      expect(userRes.status).to.equal(200);
       expect(user).to.have.property('email', utils.user.email);
       expect(user).to.have.property('username', utils.user.username);
-      expect(newUserRes.body).to.have.property('token');
+      expect(userRes.body).to.have.property('token');
     });
-
   });
 
   describe('POST /auth/login', () => {

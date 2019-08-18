@@ -3,9 +3,10 @@ import {db} from '../models';
 
 export const utils = {
   post: {
-    title: 'Test title',
+    subject: 'Test title',
     description: 'Test Description',
-    creator: '',
+    price: 0,
+    category: 'antiques',
   },
 
   user: {

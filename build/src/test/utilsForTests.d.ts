@@ -1,8 +1,9 @@
 export declare const utils: {
     post: {
-        title: string;
+        subject: string;
         description: string;
-        creator: string;
+        price: number;
+        category: string;
     };
     user: {
         username: string;

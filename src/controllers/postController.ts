@@ -77,9 +77,9 @@ export async function createPost(req: Request, res: Response, next: NextFunction
     if (!category) {
       return res.json({ message: 'Category does not exist.' });
     }
-    const categoryId: string = category._id;
 
     const authenticatedUser: any = res.locals.authenticatedUser;
+
     const postCreateBody = {
       subject: req.body.subject,
       description: req.body.description,
@@ -111,8 +111,12 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
     const [category, originalPost] = await Promise.all(
       [Category.findOne({ category: req.body.category }), Post.findById(postId)]
     );
-    if (!originalPost || !category) {
+    if (!originalPost) {
       return res.json({ message: `Post with id ${postId} does not exist.` });
+    }
+
+    if (!category) {
+      return res.json({ message: 'Category does not exist.' });
     }
 
     const authenticatedUser: any = res.locals.authenticatedUser;

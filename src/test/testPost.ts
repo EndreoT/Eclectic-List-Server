@@ -1,274 +1,224 @@
-// // During the test the env variable is set to test
-// process.env.NODE_ENV = 'test';
+//Require the dev-dependencies
+import { expect } from 'chai';
+import * as request from 'supertest';
+import { } from 'mocha';
+import { db } from '../models';
 
-// //Require the dev-dependencies
-// const chai = require('chai');
-// const server = require('../../server');
-// const request = require('supertest');
-// const db = require('../models');
-// const usersSeed = require('../scripts/usersSeed.json');
-// const eventsSeed = require('../scripts/eventsSeed.json');
-// const testUtils = require('./utilsForTests');
-// const utils = require('../scripts/utils');
-
-// const expect = chai.expect;
+import { utils } from './utilsForTests';
+import { expressServer } from './init';;
 
 
-// createEvent = async (body) => {
-//   const event = await db.Event.create(body);
-//   await db.UserEvent.create({ user_id: event.creator, event_id: event._id });
-// };
+//Our parent block
+describe('Post', () => {
 
-// //Our parent block
-// describe('Event', () => {
+  beforeEach(async () => {
+    // Before each test we empty the database
+    await utils.dropAllCollections();
+  });
 
-//   beforeEach(async () => { // Before each test we empty the database
-//     // Seed DB with users
-//     await utils.dropAllCollections();
+  after(async () => {
+    await utils.dropAllCollections();
+  });
 
-//     // Create a new user
-//     this.newUserRes = await request(server)
-//       .post('/auth/signup')
-//       .send(testUtils.user);
-//   });
+  describe('GET api/posts/postsByUser/:user', () => {
 
-//   after(async () => {
-//     await utils.dropAllCollections();
-//   });
+    it('it should GET all posts created by a given user', async () => {
+      const userRes = await request(expressServer)
+        .post('/auth/signup')
+        .send(utils.user);
 
-//   describe('/GET /api/events', () => {
+      await request(expressServer)
+        .post('/api/posts')
+        .set('Authorization', 'bearer ' + userRes.body.token)
+        .send(utils.post);
 
-//     it('it should GET all the events', async () => {
+      const postsRes = await request(expressServer).get(`/api/posts/postsByUser/${userRes.body.user.username}`);
 
-//       // Add all users
-//       await testUtils.seedUsers(usersSeed);
+      expect(postsRes.status).to.equal(200);
+      expect(postsRes.body.length).to.equal(1);
+    });
+  });
 
-//       const savedUsers = await db.User.find();
+  describe('POST /api/posts', async () => {
 
-//       // Add all events
-//       await utils.asyncForEach(eventsSeed, async (item, index) => {
-//         const user = savedUsers[index];
-//         const event = item;
-//         event.creator = user._id;
-//         try {
-//           await createEvent(event);
-//         } catch (err) {
-//           console.log(err);
-//         }
-//       });
+    it('should return event when the all request body is valid and user in authenticated', async () => {
+      const userRes = await request(expressServer)
+        .post('/auth/signup')
+        .send(utils.user);
 
-//       const res = await request(server).get('/api/events');
-//       expect(res.status).to.equal(200);
-//       expect(res.body).to.be.a('array');
-//       expect(res.body.length).to.equal(6);
-//     });
-//   });
+      const postRes = await request(expressServer)
+        .post('/api/posts')
+        .set('Authorization', 'bearer ' + userRes.body.token)
+        .send(utils.post);
 
-//   describe('GET /api/events/:id', () => {
+      expect(postRes.status).to.equal(200);
+      expect(postRes.body).to.have.property('user', userRes.body.user._id.toString());
+      expect(postRes.body).to.have.property('subject', utils.post.subject);
+    });
 
-//     it('it should GET an Event by the given id', async () => {
-//       testUtils.event.creator = this.newUserRes.body.user._id.toString();
-//       const savedEvent = await db.Event.create(testUtils.event);
-//       const res = await request(server).get(`/api/events/${savedEvent._id.toString()}`);
+    it('should not create a Event document if user does not exist', async () => {
+      const postRes = await request(expressServer)
+        .post('/api/posts')
+        .set('Authorization', 'bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjVkNTk4ZTc1ZDkxZWYyNGZmNDQ2MjgyYiIsInVzZXJuYW1lIjoiZmlyc3QiLCJlbWFpbCI6InRlc3RAZ21haWwuY29tIn0sImlhdCI6MTU2NjE1MDI2MSwiZXhwIjoxNTY2NzU1MDYxfQ.qIa8bHd7-JVSkuDozSksN6XJfikB6DBhggtL5coD9EE')
+        .send(utils.post);
 
-//       expect(res.status).to.equal(200);
-//       expect(res.body).to.have.property('description');
-//       expect(res.body).to.have.property('title');
-//       expect(res.body).to.have.property('_id', savedEvent._id.toString());
-//     });
+      expect(postRes.status).to.be.eql(401);
+      expect(postRes.body).to.have.property('message', 'The user in the token was not found');
+    });
+  });
 
-//     it('it should raise a 422 error with an invalid event id', async () => {
-//       const res = await request(server).get('/api/events/1');
-//       expect(res.status).to.equal(422);
-//     });
+  describe('PUT /:id', () => {
+    it('should update the existing event and return 200 only with validated credentials', async () => {
+      const userRes = await request(expressServer)
+        .post('/auth/signup')
+        .send(utils.user);
 
-//     it('it should return null if event is not found with a valid event id', async () => {
-//       const res = await request(server).get('/api/events/111111111111111111111111');
-//       expect(res.status).to.equal(200);
-//     });
-//   });
+      const postRes = await request(expressServer)
+        .post('/api/posts')
+        .set('Authorization', 'bearer ' + userRes.body.token)
+        .send(utils.post);
 
-//   describe('POST /api/events', async () => {
+      const updateRes = await request(expressServer)
+        .put('/api/posts/' + postRes.body._id)
+        .set('Authorization', 'bearer ' + userRes.body.token)
+        .send({
+          subject: 'testSubject',
+          description: 'testDesc',
+          price: 2,
+          category: 'appliances',
+        });
 
-//     it('should return event when the all request body is valid and user in authenticated', async () => {
+      expect(updateRes.status).to.equal(200);
+      expect(updateRes.body).to.have.property('subject', 'testSubject');
+      expect(updateRes.body).to.have.property('price', 2.0);
+      expect(updateRes.body).to.have.property('description', 'testDesc');
+      expect(updateRes.body.user).to.equal(userRes.body.user._id.toString());
+    });
 
-//       testUtils.event.creator = this.newUserRes.body.user._id.toString();
+    it('should NOT update the existing event and return 422 only with invalid credentials', async () => {
 
-//       const res = await request(server)
-//         .post('/api/events')
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-//         .send(testUtils.event);
+      const userRes = await request(expressServer)
+        .post('/auth/signup')
+        .send(utils.user);
 
-//       expect(res.status).to.equal(200);
-//       expect(res.body).to.have.property('creator', this.newUserRes.body.user._id.toString());
-//       expect(res.body).to.have.property('title', testUtils.event.title);
-//     });
+      const postRes = await request(expressServer)
+        .post('/api/posts')
+        .set('Authorization', 'bearer ' + userRes.body.token)
+        .send(utils.post);
 
-//     it('should not create a Event document if user does not exist', async () => {
-//       testUtils.event.creator = '111111111111111111111111';
-//       const res = await request(server)
-//         .post('/api/events')
-//         .set('Authorization', 'bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjVkNGRhY2JlNTViNmQxMDVlMDJhMWI1NSIsImZpcnN0X25hbWUiOiJhc2RmIiwiZW1haWwiOiJkZGZAYWEuY29tIn0sImlhdCI6MTU2NTM3MTU4MiwiZXhwIjoxNTY1OTc2MzgyfQ.D2Wslrl0KO-byZnrvjjfyJicRpNBw-DtT5Tiek-Nih8')
-//         .send(testUtils.event);
-//       expect(res.status).to.be.eql(401);
-//       expect(res.body).to.have.property('message', 'The user in the token was not found');
-//     });
+      const otherUser = await request(expressServer)
+        .post('/auth/signup')
+        .send({
+          username: 'otherUsername',
+          password: '1234asdf',
+          email: 'otheruser@email.com'
+        });
 
-//     it('should create a UserEvent document after the event is created successfully', async () => {
+      const updateRes = await request(expressServer)
+        .put('/api/posts/' + postRes.body._id)
+        .set('Authorization', 'bearer ' + otherUser.body.token)
+        .send({
+          subject: 'testSubject',
+          description: 'testDesc',
+          price: 2,
+          category: 'appliances',
+        });
 
-//       testUtils.event.creator = this.newUserRes.body.user._id.toString();
+      expect(updateRes.status).to.equal(422);
+      expect(updateRes.body).to.have.property('message', 'You are not authorized to perform this action');
+    });
+  });
 
-//       const eventRes = await request(server)
-//         .post('/api/events')
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-//         .send(testUtils.event);
+  // describe('DELETE /:id', () => {
 
-//       const userEventRes = await request(server)
-//         .get(`/api/userEvents/${this.newUserRes.body.user._id.toString()}/${eventRes.body._id}`)
-//         .send(testUtils.event);
-//       expect(userEventRes.body.user_id).to.equal(this.newUserRes.body.user._id.toString());
-//       expect(userEventRes.body.event_id).to.equal(eventRes.body._id.toString());
-//     });
-//   });
+  //   it('should delete requested id and return response 200 only with validated credentials', async () => {
 
-//   describe('PUT /:id', () => {
-//     it('should update the existing event and return 200 only with validated credentials', async () => {
+  //     utils.event.creator = this.newUserRes.body.user._id.toString();
 
-//       testUtils.event.creator = this.newUserRes.body.user._id.toString();
+  //     const eventRes = await request(expressServer)
+  //       .post('/api/posts')
+  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token)
+  //       .send(utils.event);
 
-//       const newEvent = new db.Event(testUtils.event);
-//       await newEvent.save();
+  //     const deleteRes = await request(expressServer)
+  //       .delete('/api/posts/' + eventRes.body._id)
+  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token);
+  //     expect(deleteRes.status).to.be.equal(200);
+  //   });
 
-//       const res = await request(server)
-//         .put('/api/events/' + newEvent._id)
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-//         .send({
-//           description: 'descTest',
-//           title: 'titleTest',
-//         });
-//       expect(res.status).to.equal(200);
-//       expect(res.body).to.have.property('description', 'descTest');
-//       expect(res.body.creator).to.equal(this.newUserRes.body.user._id.toString());
-//     });
+  //   it('should NOT delete requested id and return response 404 only with invalid credentials', async () => {
 
-//     it('should NOT update the existing event and return 422 only with invalid credentials', async () => {
+  //     utils.event.creator = this.newUserRes.body.user._id.toString();
 
-//       testUtils.event.creator = this.newUserRes.body.user._id.toString();
+  //     const eventRes = await request(expressServer)
+  //       .post('/api/posts')
+  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token)
+  //       .send(utils.event);
 
-//       const otherUser = await request(server)
-//         .post('/auth/signup')
-//         .send({
-//           first_name: 'first',
-//           last_name: 'last',
-//           password: '1234',
-//           email: 'otheruser@email.com'
-//         });
+  //     const otherUser = await request(expressServer)
+  //       .post('/auth/signup')
+  //       .send({
+  //         first_name: 'first',
+  //         last_name: 'last',
+  //         password: '1234',
+  //         email: 'otheruser@email.com'
+  //       });
 
-//       const newEvent = new db.Event(testUtils.event);
-//       await newEvent.save();
+  //     const deleteRes = await request(expressServer)
+  //       .delete('/api/posts/' + eventRes.body._id)
+  //       .set('Authorization', 'bearer ' + otherUser.body.token);
+  //     expect(deleteRes.status).to.be.equal(422);
+  //     expect(deleteRes.body).to.have.property('message', 'You are not authorized to perform this action');
+  //   });
 
-//       const res = await request(server)
-//         .put('/api/events/' + newEvent._id)
-//         .set('Authorization', 'bearer ' + otherUser.body.token)
-//         .send({
-//           description: 'descTest',
-//           title: 'titleTest',
-//         });
-//       expect(res.status).to.equal(422);
-//       expect(res.body).to.have.property('message', 'You are not authorized to perform this action');
-//     });
-//   });
+  //   it('should delete requested id, delete all UserEvent documents with field event_id === id, and return response 200', async () => {
 
-//   describe('DELETE /:id', () => {
+  //     utils.event.creator = this.newUserRes.body.user._id.toString();
 
-//     it('should delete requested id and return response 200 only with validated credentials', async () => {
+  //     const eventRes = await request(expressServer)
+  //       .post('/api/posts')
+  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token)
+  //       .send(utils.event);
 
-//       testUtils.event.creator = this.newUserRes.body.user._id.toString();
+  //     await request(expressServer)
+  //       .delete('/api/posts/' + eventRes.body._id)
+  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token);
 
-//       const eventRes = await request(server)
-//         .post('/api/events')
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-//         .send(testUtils.event);
+  //     const founduserEvents = await db.UserEvent.find({ event_id: eventRes.body._id });
+  //     expect(founduserEvents.length).to.be.equal(0);
+  //   });
 
-//       const deleteRes = await request(server)
-//         .delete('/api/events/' + eventRes.body._id)
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token);
-//       expect(deleteRes.status).to.be.equal(200);
-//     });
+  //   it('should raise 422 when deleted event id is not a valid _id', async () => {
 
-//     it('should NOT delete requested id and return response 404 only with invalid credentials', async () => {
+  //     utils.event.creator = this.newUserRes.body.user._id.toString();
 
-//       testUtils.event.creator = this.newUserRes.body.user._id.toString();
+  //     await request(expressServer)
+  //       .post('/api/posts')
+  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token)
+  //       .send(utils.event);
 
-//       const eventRes = await request(server)
-//         .post('/api/events')
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-//         .send(testUtils.event);
+  //     const deleteRes = await request(expressServer)
+  //       .delete('/api/posts/1')
+  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token);
 
-//       const otherUser = await request(server)
-//         .post('/auth/signup')
-//         .send({
-//           first_name: 'first',
-//           last_name: 'last',
-//           password: '1234',
-//           email: 'otheruser@email.com'
-//         });
+  //     expect(deleteRes.status).to.be.equal(404);
+  //     expect(deleteRes.body).to.have.property('message');
+  //   });
 
-//       const deleteRes = await request(server)
-//         .delete('/api/events/' + eventRes.body._id)
-//         .set('Authorization', 'bearer ' + otherUser.body.token);
-//       expect(deleteRes.status).to.be.equal(422);
-//       expect(deleteRes.body).to.have.property('message', 'You are not authorized to perform this action');
-//     });
+  //   it('should return null when deleted event does not exist', async () => {
 
-//     it('should delete requested id, delete all UserEvent documents with field event_id === id, and return response 200', async () => {
+  //     utils.event.creator = this.newUserRes.body.user._id.toString();
 
-//       testUtils.event.creator = this.newUserRes.body.user._id.toString();
+  //     await request(expressServer)
+  //       .post('/api/posts')
+  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token)
+  //       .send(utils.event);
 
-//       const eventRes = await request(server)
-//         .post('/api/events')
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-//         .send(testUtils.event);
+  //     const deleteRes = await request(expressServer)
+  //       .delete('/api/posts/111111111111111111111111')
+  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token);
 
-//       await request(server)
-//         .delete('/api/events/' + eventRes.body._id)
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token);
-
-//       const founduserEvents = await db.UserEvent.find({ event_id: eventRes.body._id });
-//       expect(founduserEvents.length).to.be.equal(0);
-//     });
-
-//     it('should raise 422 when deleted event id is not a valid _id', async () => {
-
-//       testUtils.event.creator = this.newUserRes.body.user._id.toString();
-
-//       await request(server)
-//         .post('/api/events')
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-//         .send(testUtils.event);
-
-//       const deleteRes = await request(server)
-//         .delete('/api/events/1')
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token);
-
-//       expect(deleteRes.status).to.be.equal(404);
-//       expect(deleteRes.body).to.have.property('message');
-//     });
-
-//     it('should return null when deleted event does not exist', async () => {
-
-//       testUtils.event.creator = this.newUserRes.body.user._id.toString();
-
-//       await request(server)
-//         .post('/api/events')
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-//         .send(testUtils.event);
-
-//       const deleteRes = await request(server)
-//         .delete('/api/events/111111111111111111111111')
-//         .set('Authorization', 'bearer ' + this.newUserRes.body.token);
-
-//       expect(deleteRes.status).to.be.equal(404);
-//     });
-//   });
-// });
+  //     expect(deleteRes.status).to.be.equal(404);
+  //   });
+  // });
+});

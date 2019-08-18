@@ -4,9 +4,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const models_1 = require("../models");
 exports.utils = {
     post: {
-        title: 'Test title',
+        subject: 'Test title',
         description: 'Test Description',
-        creator: '',
+        price: 0,
+        category: 'antiques',
     },
     user: {
         username: 'testuser',

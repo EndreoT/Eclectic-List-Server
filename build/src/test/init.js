@@ -9,6 +9,8 @@ const application = new app_1.default();
 application.initExpressConnection();
 before(async () => {
     await models_1.db.Image.create({ path: '1234', public_id: '1234', folder: 'avatar', caption: 'default' });
+    await models_1.db.Category.create({ category: 'antiques' });
+    await models_1.db.Category.create({ category: 'appliances' });
 });
 after(async () => {
     await utilsForTests_1.utils.dropAllCollections();

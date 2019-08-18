@@ -13,9 +13,11 @@ application.initExpressConnection();
 
 before(async () => {
   await db.Image.create({ path: '1234', public_id: '1234', folder: 'avatar', caption: 'default' })
+  await db.Category.create({category: 'antiques'})
+  await db.Category.create({category: 'appliances'})
 })
 
-after(async() => {
+after(async () => {
   await utils.dropAllCollections();
   await db.Image.remove({});
 })
