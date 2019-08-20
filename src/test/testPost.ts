@@ -129,96 +129,68 @@ describe('Post', () => {
     });
   });
 
-  // describe('DELETE /:id', () => {
+  describe('DELETE /:id', () => {
 
-  //   it('should delete requested id and return response 200 only with validated credentials', async () => {
+    it('should delete requested id and return response 200 only with validated credentials', async () => {
+      const userRes = await request(expressServer)
+        .post('/auth/signup')
+        .send(utils.user);
 
-  //     utils.event.creator = this.newUserRes.body.user._id.toString();
+      const postRes = await request(expressServer)
+        .post('/api/posts')
+        .set('Authorization', 'bearer ' + userRes.body.token)
+        .send(utils.post);
 
-  //     const eventRes = await request(expressServer)
-  //       .post('/api/posts')
-  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-  //       .send(utils.event);
+      const deleteRes = await request(expressServer)
+        .delete('/api/posts/' + postRes.body._id)
+        .set('Authorization', 'bearer ' + userRes.body.token);
 
-  //     const deleteRes = await request(expressServer)
-  //       .delete('/api/posts/' + eventRes.body._id)
-  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token);
-  //     expect(deleteRes.status).to.be.equal(200);
-  //   });
+      expect(deleteRes.status).to.be.equal(200);
+    });
 
-  //   it('should NOT delete requested id and return response 404 only with invalid credentials', async () => {
+    it('should NOT delete requested id and return response 404 only with invalid credentials', async () => {
 
-  //     utils.event.creator = this.newUserRes.body.user._id.toString();
+      const userRes = await request(expressServer)
+        .post('/auth/signup')
+        .send(utils.user);
 
-  //     const eventRes = await request(expressServer)
-  //       .post('/api/posts')
-  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-  //       .send(utils.event);
+      const postRes = await request(expressServer)
+        .post('/api/posts')
+        .set('Authorization', 'bearer ' + userRes.body.token)
+        .send(utils.post);
 
-  //     const otherUser = await request(expressServer)
-  //       .post('/auth/signup')
-  //       .send({
-  //         first_name: 'first',
-  //         last_name: 'last',
-  //         password: '1234',
-  //         email: 'otheruser@email.com'
-  //       });
+      const otherUser = await request(expressServer)
+        .post('/auth/signup')
+        .send({
+          username: 'otherUsername',
+          password: '1234asdf',
+          email: 'otheruser@email.com'
+        });
 
-  //     const deleteRes = await request(expressServer)
-  //       .delete('/api/posts/' + eventRes.body._id)
-  //       .set('Authorization', 'bearer ' + otherUser.body.token);
-  //     expect(deleteRes.status).to.be.equal(422);
-  //     expect(deleteRes.body).to.have.property('message', 'You are not authorized to perform this action');
-  //   });
+      const deleteRes = await request(expressServer)
+        .delete('/api/posts/' + postRes.body._id)
+        .set('Authorization', 'bearer ' + otherUser.body.token);
 
-  //   it('should delete requested id, delete all UserEvent documents with field event_id === id, and return response 200', async () => {
+      expect(deleteRes.status).to.be.equal(422);
+      expect(deleteRes.body).to.have.property('message', 'You are not authorized to perform this action');
+    });
 
-  //     utils.event.creator = this.newUserRes.body.user._id.toString();
+    it('should NOT delete requested id and return response 404 with a missing JWT', async () => {
 
-  //     const eventRes = await request(expressServer)
-  //       .post('/api/posts')
-  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-  //       .send(utils.event);
+       const userRes = await request(expressServer)
+        .post('/auth/signup')
+        .send(utils.user);
 
-  //     await request(expressServer)
-  //       .delete('/api/posts/' + eventRes.body._id)
-  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token);
+      const postRes = await request(expressServer)
+        .post('/api/posts')
+        .set('Authorization', 'bearer ' + userRes.body.token)
+        .send(utils.post);
 
-  //     const founduserEvents = await db.UserEvent.find({ event_id: eventRes.body._id });
-  //     expect(founduserEvents.length).to.be.equal(0);
-  //   });
+      const deleteRes = await request(expressServer)
+        .delete('/api/posts/' + postRes.body._id)
 
-  //   it('should raise 422 when deleted event id is not a valid _id', async () => {
-
-  //     utils.event.creator = this.newUserRes.body.user._id.toString();
-
-  //     await request(expressServer)
-  //       .post('/api/posts')
-  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-  //       .send(utils.event);
-
-  //     const deleteRes = await request(expressServer)
-  //       .delete('/api/posts/1')
-  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token);
-
-  //     expect(deleteRes.status).to.be.equal(404);
-  //     expect(deleteRes.body).to.have.property('message');
-  //   });
-
-  //   it('should return null when deleted event does not exist', async () => {
-
-  //     utils.event.creator = this.newUserRes.body.user._id.toString();
-
-  //     await request(expressServer)
-  //       .post('/api/posts')
-  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token)
-  //       .send(utils.event);
-
-  //     const deleteRes = await request(expressServer)
-  //       .delete('/api/posts/111111111111111111111111')
-  //       .set('Authorization', 'bearer ' + this.newUserRes.body.token);
-
-  //     expect(deleteRes.status).to.be.equal(404);
-  //   });
-  // });
+      expect(deleteRes.status).to.be.equal(401);
+      expect(deleteRes.body).to.have.property('message', 'No auth token');
+    });
+  })
 });
